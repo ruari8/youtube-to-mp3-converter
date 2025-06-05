@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-YouTube to MP3 Converter
-A simple command-line tool to download YouTube videos and convert them to MP3 format.
+Media Downloader
+A simple command-line tool to download YouTube videos as MP3s or Twitter videos as MP4s.
 """
 
 import os
@@ -41,9 +41,9 @@ def download_youtube_to_mp3(url, output_path=None, quality='best'):
     
     create_output_dir(output_path)
     
-    # Configure yt-dlp options
+    # Configure yt-dlp options - fixed to prevent multiple downloads
     ydl_opts = {
-        'format': 'bestaudio/best',
+        'format': 'bestaudio[ext=m4a]/bestaudio[ext=webm]/bestaudio',  # Best audio only, specific formats
         'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
@@ -51,8 +51,17 @@ def download_youtube_to_mp3(url, output_path=None, quality='best'):
             'preferredquality': '192',
         }],
         'noplaylist': True,  # Only download single video, not playlist
-        'extractaudio': True,
-        'audioformat': 'mp3',
+        'no_warnings': False,
+        'ignoreerrors': False,
+        'writethumbnail': False,  # Don't download thumbnails
+        'writeinfojson': False,   # Don't write info files
+        'writedescription': False,  # Don't write description files
+        'writesubtitles': False,   # Don't download subtitles
+        'writeautomaticsub': False,  # Don't download auto-generated subs
+        'embed_chapters': False,   # Don't embed chapters
+        'split_chapters': False,   # Don't split into chapters (THIS IS KEY!)
+        'extract_flat': False,     # Full extraction, not just metadata
+        'ignoreerrors': False,     # Stop on errors rather than continue
     }
     
     try:
@@ -78,51 +87,105 @@ def download_youtube_to_mp3(url, output_path=None, quality='best'):
         return False
 
 
+def download_twitter_video(url, output_path=None):
+    """
+    Download a video from a Tweet URL.
+
+    Args:
+        url (str): Twitter video URL
+        output_path (str): Directory to save the MP4 file
+
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    if output_path is None:
+        output_path = os.path.join(os.path.expanduser('~'), 'Downloads', 'Twitter_Videos')
+
+    create_output_dir(output_path)
+
+    ydl_opts = {
+        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+        'outtmpl': os.path.join(output_path, '%(uploader)s_%(id)s.%(ext)s'),
+        'noplaylist': True,
+        'no_warnings': False,
+        'ignoreerrors': False,
+    }
+
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+            uploader = info.get('uploader', 'Unknown')
+            tweet_id = info.get('id', 'Unknown')
+            
+            print(f"Uploader: @{uploader}")
+            print(f"Tweet ID: {tweet_id}")
+            print(f"Downloading video...")
+
+            ydl.download([url])
+
+            print(f"✅ Successfully downloaded video from @{uploader}")
+            print(f"📁 Saved to: {output_path}")
+            return True
+
+    except Exception as e:
+        print(f"❌ Error: {str(e)}")
+        return False
+
+
 def main():
     parser = argparse.ArgumentParser(
-        description="Download YouTube videos and convert them to MP3 format",
+        description="Download videos from YouTube (as MP3) or Twitter (as MP4).",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
+  # Download YouTube video as MP3
   yt2mp3 https://www.youtube.com/watch?v=dQw4w9WgXcQ
   yt2mp3 "https://www.youtube.com/watch?v=dQw4w9WgXcQ" -o ~/Music
-  yt2mp3 https://youtu.be/dQw4w9WgXcQ --output ./downloads
+
+  # Download Twitter video as MP4
+  yt2mp3 https://twitter.com/user/status/12345
+  yt2mp3 https://x.com/user/status/12345 -o ./videos
         """
     )
     
-    parser.add_argument('url', help='YouTube video URL')
+    parser.add_argument('url', help='YouTube or Twitter URL')
     parser.add_argument(
         '-o', '--output',
         default=None,
-        help='Output directory (default: ~/Downloads/YouTube_MP3)'
+        help='Output directory'
     )
     parser.add_argument(
         '-q', '--quality',
         default='best',
-        help='Audio quality (default: best)'
+        help='Audio quality for YouTube downloads (default: best)'
     )
     parser.add_argument(
         '--version',
         action='version',
-        version='YouTube to MP3 Converter 1.0.0'
+        version='Media Downloader 1.1.0'
     )
     
     args = parser.parse_args()
     
-    # Validate URL
-    if not any(domain in args.url for domain in ['youtube.com', 'youtu.be']):
-        print("❌ Error: Please provide a valid YouTube URL")
-        sys.exit(1)
-    
-    print("🎵 YouTube to MP3 Converter")
-    print("=" * 40)
-    
-    success = download_youtube_to_mp3(args.url, args.output, args.quality)
-    
-    if success:
-        print("\n🎉 Conversion completed successfully!")
+    url = args.url
+    success = False
+
+    if 'youtube.com' in url or 'youtu.be' in url:
+        print("🎵 YouTube to MP3 Converter")
+        print("=" * 40)
+        success = download_youtube_to_mp3(url, args.output, args.quality)
+    elif 'twitter.com' in url or 'x.com' in url:
+        print("🐦 Twitter Video Downloader")
+        print("=" * 40)
+        success = download_twitter_video(url, args.output)
     else:
-        print("\n💥 Conversion failed!")
+        print("❌ Error: Please provide a valid YouTube or Twitter URL.")
+        sys.exit(1)
+
+    if success:
+        print("\n🎉 Download completed successfully!")
+    else:
+        print("\n💥 Download failed!")
         sys.exit(1)
 
 
