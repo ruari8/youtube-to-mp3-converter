@@ -132,9 +132,64 @@ def download_twitter_video(url, output_path=None):
         return False
 
 
+def download_instagram_media(url, output_path=None, download_all=False, playlist_items=None):
+    """
+    Download Instagram media (focus on videos). Supports single post, full carousel,
+    or selected carousel indices without authentication.
+
+    Args:
+        url (str): Instagram post URL
+        output_path (str): Directory to save files
+        download_all (bool): If True, download all items from a carousel
+        playlist_items (str|None): Indices or ranges (e.g., "1,3-5") for carousel items
+
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    if output_path is None:
+        output_path = os.path.join(os.path.expanduser('~'), 'Downloads', 'Instagram')
+
+    create_output_dir(output_path)
+
+    multiple_items = bool(download_all or playlist_items)
+
+    # Prefer MP4 when available; fall back to best
+    outtmpl_single = os.path.join(output_path, '%(uploader)s_%(id)s.%(ext)s')
+    outtmpl_multi = os.path.join(output_path, '%(uploader)s_%(playlist_index)s_%(id)s.%(ext)s')
+
+    ydl_opts = {
+        'format': 'best[ext=mp4]/best',
+        'outtmpl': outtmpl_multi if multiple_items else outtmpl_single,
+        # Treat carousels as playlists so we can target indices
+        'noplaylist': False,
+        'no_warnings': False,
+        'ignoreerrors': False,
+    }
+
+    # Default behavior: first item only when neither --ig-all nor --ig-index is provided
+    if not multiple_items:
+        ydl_opts['playlist_items'] = '1'
+    elif playlist_items:
+        ydl_opts['playlist_items'] = playlist_items
+
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+            title = info.get('title', 'Instagram')
+            print(f"Post title: {title}")
+            print("Downloading Instagram media...")
+            ydl.download([url])
+            print("✅ Successfully downloaded Instagram media")
+            print(f"📁 Saved to: {output_path}")
+            return True
+    except Exception as e:
+        print(f"❌ Error: {str(e)}")
+        return False
+
+
 def main():
     parser = argparse.ArgumentParser(
-        description="Download videos from YouTube (as MP3) or Twitter (as MP4).",
+        description="Download media: YouTube (MP3), Twitter (MP4), Instagram (MP4).",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -145,10 +200,19 @@ Examples:
   # Download Twitter video as MP4
   yt2mp3 https://twitter.com/user/status/12345
   yt2mp3 https://x.com/user/status/12345 -o ./videos
+
+  # Download Instagram post (first carousel item by default)
+  yt2mp3 https://www.instagram.com/p/POST_ID/
+
+  # Download all carousel items
+  yt2mp3 https://www.instagram.com/p/POST_ID/ --ig-all -o ~/Downloads/Instagram
+
+  # Download specific carousel indices
+  yt2mp3 https://www.instagram.com/p/POST_ID/ --ig-index 1,3-4
         """
     )
     
-    parser.add_argument('url', help='YouTube or Twitter URL')
+    parser.add_argument('url', help='YouTube, Twitter, or Instagram URL')
     parser.add_argument(
         '-o', '--output',
         default=None,
@@ -158,6 +222,17 @@ Examples:
         '-q', '--quality',
         default='best',
         help='Audio quality for YouTube downloads (default: best)'
+    )
+    # Instagram options (no-login). By default, downloads first item only
+    parser.add_argument(
+        '--ig-all',
+        action='store_true',
+        help='For Instagram carousels: download all items'
+    )
+    parser.add_argument(
+        '--ig-index',
+        default=None,
+        help='For Instagram carousels: indices or ranges (e.g., 1,3-5)'
     )
     parser.add_argument(
         '--version',
@@ -178,8 +253,17 @@ Examples:
         print("🐦 Twitter Video Downloader")
         print("=" * 40)
         success = download_twitter_video(url, args.output)
+    elif 'instagram.com' in url:
+        print("📸 Instagram Downloader")
+        print("=" * 40)
+        success = download_instagram_media(
+            url,
+            args.output,
+            download_all=args.ig_all,
+            playlist_items=args.ig_index,
+        )
     else:
-        print("❌ Error: Please provide a valid YouTube or Twitter URL.")
+        print("❌ Error: Please provide a valid YouTube, Twitter, or Instagram URL.")
         sys.exit(1)
 
     if success:
