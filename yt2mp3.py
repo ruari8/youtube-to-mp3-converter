@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Media Downloader
-A simple command-line tool to download YouTube videos as MP3s or Twitter videos as MP4s.
+A simple command-line tool to download YouTube videos as MP3s or MP4s, Twitter videos as MP4s, and Instagram media.
 """
 
 import os
@@ -79,6 +79,63 @@ def download_youtube_to_mp3(url, output_path=None, quality='best'):
             ydl.download([url])
             
             print(f"✅ Successfully converted: {title}")
+            print(f"📁 Saved to: {output_path}")
+            return True
+            
+    except Exception as e:
+        print(f"❌ Error: {str(e)}")
+        return False
+
+
+def download_youtube_to_mp4(url, output_path=None):
+    """
+    Download YouTube video as MP4.
+    
+    Args:
+        url (str): YouTube video URL
+        output_path (str): Directory to save the MP4 file
+    
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    if output_path is None:
+        output_path = os.path.join(os.path.expanduser('~'), 'Downloads', 'YouTube_MP4')
+    
+    create_output_dir(output_path)
+    
+    # Configure yt-dlp options for MP4 video download
+    ydl_opts = {
+        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+        'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
+        'merge_output_format': 'mp4',  # Merge video and audio into MP4
+        'noplaylist': True,  # Only download single video, not playlist
+        'no_warnings': False,
+        'ignoreerrors': False,
+        'writethumbnail': False,  # Don't download thumbnails
+        'writeinfojson': False,   # Don't write info files
+        'writedescription': False,  # Don't write description files
+        'writesubtitles': False,   # Don't download subtitles
+        'writeautomaticsub': False,  # Don't download auto-generated subs
+        'embed_chapters': False,   # Don't embed chapters
+        'split_chapters': False,   # Don't split into chapters
+        'extract_flat': False,     # Full extraction, not just metadata
+    }
+    
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            # Get video info first
+            info = ydl.extract_info(url, download=False)
+            title = info.get('title', 'Unknown')
+            duration = info.get('duration', 0)
+            
+            print(f"Title: {title}")
+            print(f"Duration: {duration // 60}:{duration % 60:02d}")
+            print(f"Downloading video as MP4...")
+            
+            # Download video
+            ydl.download([url])
+            
+            print(f"✅ Successfully downloaded: {title}")
             print(f"📁 Saved to: {output_path}")
             return True
             
@@ -189,13 +246,17 @@ def download_instagram_media(url, output_path=None, download_all=False, playlist
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Download media: YouTube (MP3), Twitter (MP4), Instagram (MP4).",
+        description="Download media: YouTube (MP3 or MP4), Twitter (MP4), Instagram (MP4).",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Download YouTube video as MP3
+  # Download YouTube video as MP3 (default)
   yt2mp3 https://www.youtube.com/watch?v=dQw4w9WgXcQ
   yt2mp3 "https://www.youtube.com/watch?v=dQw4w9WgXcQ" -o ~/Music
+
+  # Download YouTube video as MP4
+  yt2mp3 https://www.youtube.com/watch?v=dQw4w9WgXcQ --mp4
+  yt2mp3 "https://www.youtube.com/watch?v=dQw4w9WgXcQ" --mp4 -o ~/Videos
 
   # Download Twitter video as MP4
   yt2mp3 https://twitter.com/user/status/12345
@@ -221,7 +282,12 @@ Examples:
     parser.add_argument(
         '-q', '--quality',
         default='best',
-        help='Audio quality for YouTube downloads (default: best)'
+        help='Audio quality for YouTube MP3 downloads (default: best)'
+    )
+    parser.add_argument(
+        '--mp4',
+        action='store_true',
+        help='For YouTube: download as MP4 video instead of MP3 audio'
     )
     # Instagram options (no-login). By default, downloads first item only
     parser.add_argument(
@@ -246,9 +312,14 @@ Examples:
     success = False
 
     if 'youtube.com' in url or 'youtu.be' in url:
-        print("🎵 YouTube to MP3 Converter")
-        print("=" * 40)
-        success = download_youtube_to_mp3(url, args.output, args.quality)
+        if args.mp4:
+            print("🎬 YouTube to MP4 Downloader")
+            print("=" * 40)
+            success = download_youtube_to_mp4(url, args.output)
+        else:
+            print("🎵 YouTube to MP3 Converter")
+            print("=" * 40)
+            success = download_youtube_to_mp3(url, args.output, args.quality)
     elif 'twitter.com' in url or 'x.com' in url:
         print("🐦 Twitter Video Downloader")
         print("=" * 40)
