@@ -16,7 +16,6 @@ Perfect for saving your favorite online content for offline access!
 - ✅ **No time limits** - Download videos of any length.
 - ✅ **High quality** - 192kbps MP3 or lossless FLAC for audio.
 - ✅ **Simple command-line interface** - Just `yt2mp3 <url>`
-- ✅ **macOS Quick Action** - Right-click any URL to download.
 - ✅ **Automatic file naming** - Uses video title or post info.
 - ✅ **Custom output directory** - Save files wherever you want.
 - ✅ **Safe filename handling** - Automatically sanitizes invalid characters.
@@ -126,26 +125,6 @@ yt2mp3 "https://youtu.be/dQw4w9WgXcQ"
 yt2mp3 --help
 ```
 
-## macOS Quick Action (Right-Click to Download)
-
-Install the Quick Action to download media by right-clicking any URL:
-
-```bash
-# Make sure yt2mp3 is installed first
-pip install -e .
-
-# Install the Quick Action
-./scripts/install-quick-action.sh
-```
-
-**How to use:**
-1. Select a URL in any app (browser, Notes, Slack, etc.)
-2. Right-click and choose **Services** > **Download with yt2mp3**
-3. The file will be downloaded to `~/Downloads/`
-4. You'll get a notification when complete
-
-**Note:** You may need to enable it in System Preferences > Keyboard > Shortcuts > Services.
-
 ## Default Behavior
 
 | Platform | Output Format | Default Location |
@@ -181,11 +160,6 @@ pip install -r requirements.txt
 
 ### Permission errors
 Make sure you have write permissions to the output directory.
-
-### Quick Action not appearing
-1. Open System Preferences > Keyboard > Shortcuts > Services
-2. Find "Download with yt2mp3" and enable it
-3. You may need to log out and back in for changes to take effect
 
 ## Technical Details
 
