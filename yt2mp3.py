@@ -87,6 +87,53 @@ def download_youtube_to_mp3(url, output_path=None, quality='best'):
         return False
 
 
+def download_youtube_to_flac(url, output_path=None):
+    """
+    Download YouTube video and convert to lossless FLAC.
+    """
+    if output_path is None:
+        output_path = os.path.join(os.path.expanduser('~'), 'Downloads', 'YouTube_FLAC')
+
+    create_output_dir(output_path)
+
+    ydl_opts = {
+        'format': 'bestaudio[ext=m4a]/bestaudio[ext=webm]/bestaudio',
+        'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
+        'postprocessors': [{
+            'key': 'FFmpegExtractAudio',
+            'preferredcodec': 'flac',
+        }],
+        'noplaylist': True,
+        'writethumbnail': False,
+        'writeinfojson': False,
+        'writedescription': False,
+        'writesubtitles': False,
+        'writeautomaticsub': False,
+        'embed_chapters': False,
+        'split_chapters': False,
+    }
+
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+            title = info.get('title', 'Unknown')
+            duration = info.get('duration', 0)
+
+            print(f"Title: {title}")
+            print(f"Duration: {duration // 60}:{duration % 60:02d}")
+            print(f"Downloading and converting to FLAC (lossless)...")
+
+            ydl.download([url])
+
+            print(f"✅ Successfully converted: {title}")
+            print(f"📁 Saved to: {output_path}")
+            return True
+
+    except Exception as e:
+        print(f"❌ Error: {str(e)}")
+        return False
+
+
 def download_youtube_to_mp4(url, output_path=None):
     """
     Download YouTube video as MP4.
@@ -189,6 +236,51 @@ def download_twitter_video(url, output_path=None):
         return False
 
 
+def download_soundcloud_to_mp3(url, output_path=None):
+    """
+    Download SoundCloud track as MP3.
+    """
+    if output_path is None:
+        output_path = os.path.join(os.path.expanduser('~'), 'Downloads', 'SoundCloud_MP3')
+
+    create_output_dir(output_path)
+
+    ydl_opts = {
+        'format': 'bestaudio/best',
+        'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
+        'postprocessors': [{
+            'key': 'FFmpegExtractAudio',
+            'preferredcodec': 'mp3',
+            'preferredquality': '192',
+        }],
+        'noplaylist': True,
+        'writethumbnail': False,
+        'writeinfojson': False,
+    }
+
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+            title = info.get('title', 'Unknown')
+            uploader = info.get('uploader', 'Unknown')
+            duration = info.get('duration', 0)
+
+            print(f"Title: {title}")
+            print(f"Artist: {uploader}")
+            print(f"Duration: {duration // 60}:{duration % 60:02d}")
+            print(f"Downloading and converting to MP3...")
+
+            ydl.download([url])
+
+            print(f"✅ Successfully converted: {title}")
+            print(f"📁 Saved to: {output_path}")
+            return True
+
+    except Exception as e:
+        print(f"❌ Error: {str(e)}")
+        return False
+
+
 def download_instagram_media(url, output_path=None, download_all=False, playlist_items=None):
     """
     Download Instagram media (focus on videos). Supports single post, full carousel,
@@ -246,7 +338,7 @@ def download_instagram_media(url, output_path=None, download_all=False, playlist
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Download media: YouTube (MP3 or MP4), Twitter (MP4), Instagram (MP4).",
+        description="Download media: YouTube (MP3, FLAC, or MP4), Twitter (MP4), Instagram (MP4), SoundCloud (MP3).",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -254,9 +346,15 @@ Examples:
   yt2mp3 https://www.youtube.com/watch?v=dQw4w9WgXcQ
   yt2mp3 "https://www.youtube.com/watch?v=dQw4w9WgXcQ" -o ~/Music
 
+  # Download YouTube video as lossless FLAC
+  yt2mp3 https://www.youtube.com/watch?v=dQw4w9WgXcQ --flac
+
   # Download YouTube video as MP4
   yt2mp3 https://www.youtube.com/watch?v=dQw4w9WgXcQ --mp4
   yt2mp3 "https://www.youtube.com/watch?v=dQw4w9WgXcQ" --mp4 -o ~/Videos
+
+  # Download SoundCloud track as MP3
+  yt2mp3 https://soundcloud.com/artist/track-name
 
   # Download Twitter video as MP4
   yt2mp3 https://twitter.com/user/status/12345
@@ -273,7 +371,7 @@ Examples:
         """
     )
     
-    parser.add_argument('url', help='YouTube, Twitter, or Instagram URL')
+    parser.add_argument('url', help='YouTube, Twitter, Instagram, or SoundCloud URL')
     parser.add_argument(
         '-o', '--output',
         default=None,
@@ -289,6 +387,11 @@ Examples:
         action='store_true',
         help='For YouTube: download as MP4 video instead of MP3 audio'
     )
+    parser.add_argument(
+        '--flac',
+        action='store_true',
+        help='For YouTube: download as lossless FLAC audio instead of MP3'
+    )
     # Instagram options (no-login). By default, downloads first item only
     parser.add_argument(
         '--ig-all',
@@ -303,7 +406,7 @@ Examples:
     parser.add_argument(
         '--version',
         action='version',
-        version='Media Downloader 1.1.0'
+        version='Media Downloader 1.2.0'
     )
     
     args = parser.parse_args()
@@ -316,10 +419,18 @@ Examples:
             print("🎬 YouTube to MP4 Downloader")
             print("=" * 40)
             success = download_youtube_to_mp4(url, args.output)
+        elif args.flac:
+            print("🎵 YouTube to FLAC Converter (Lossless)")
+            print("=" * 40)
+            success = download_youtube_to_flac(url, args.output)
         else:
             print("🎵 YouTube to MP3 Converter")
             print("=" * 40)
             success = download_youtube_to_mp3(url, args.output, args.quality)
+    elif 'soundcloud.com' in url:
+        print("🎧 SoundCloud to MP3 Downloader")
+        print("=" * 40)
+        success = download_soundcloud_to_mp3(url, args.output)
     elif 'twitter.com' in url or 'x.com' in url:
         print("🐦 Twitter Video Downloader")
         print("=" * 40)
@@ -334,7 +445,7 @@ Examples:
             playlist_items=args.ig_index,
         )
     else:
-        print("❌ Error: Please provide a valid YouTube, Twitter, or Instagram URL.")
+        print("❌ Error: Please provide a valid YouTube, Twitter, Instagram, or SoundCloud URL.")
         sys.exit(1)
 
     if success:
