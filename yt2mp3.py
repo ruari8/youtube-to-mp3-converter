@@ -69,7 +69,7 @@ def download_youtube_to_mp3(url, output_path=None, quality='best'):
             # Get video info first
             info = ydl.extract_info(url, download=False)
             title = info.get('title', 'Unknown')
-            duration = info.get('duration', 0)
+            duration = int(info.get('duration', 0))
             
             print(f"Title: {title}")
             print(f"Duration: {duration // 60}:{duration % 60:02d}")
@@ -117,7 +117,7 @@ def download_youtube_to_flac(url, output_path=None):
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
             title = info.get('title', 'Unknown')
-            duration = info.get('duration', 0)
+            duration = int(info.get('duration', 0))
 
             print(f"Title: {title}")
             print(f"Duration: {duration // 60}:{duration % 60:02d}")
@@ -173,7 +173,7 @@ def download_youtube_to_mp4(url, output_path=None):
             # Get video info first
             info = ydl.extract_info(url, download=False)
             title = info.get('title', 'Unknown')
-            duration = info.get('duration', 0)
+            duration = int(info.get('duration', 0))
             
             print(f"Title: {title}")
             print(f"Duration: {duration // 60}:{duration % 60:02d}")
@@ -263,7 +263,7 @@ def download_soundcloud_to_mp3(url, output_path=None):
             info = ydl.extract_info(url, download=False)
             title = info.get('title', 'Unknown')
             uploader = info.get('uploader', 'Unknown')
-            duration = info.get('duration', 0)
+            duration = int(info.get('duration', 0))
 
             print(f"Title: {title}")
             print(f"Artist: {uploader}")

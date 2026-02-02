@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="yt2mp3",
-    version="1.0.0",
+    version="1.2.0",
     description="A simple YouTube to MP3 converter",
     author="Your Name",
     py_modules=["yt2mp3"],
