@@ -3,71 +3,670 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>yt2mp3 Frontend Concepts</title>
+  <title>yt2mp3</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;600&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #0f0f13;
-      --card: #171922;
-      --text: #f5f7ff;
-      --muted: #a0a7bf;
-      --line: #2a3042;
-      --accent: #00e5ff;
+      --sand: #f9f2e8;
+      --paper: #fffaf3;
+      --ink: #2b1f18;
+      --muted: rgba(43, 31, 24, 0.66);
+      --line: rgba(43, 31, 24, 0.18);
+      --clay: #efcaa9;
+      --leaf: #5b7d4e;
+      --accent: #ff3b00;
     }
+
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
       min-height: 100vh;
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      background: radial-gradient(circle at 15% 20%, #232949 0%, var(--bg) 45%), var(--bg);
-      color: var(--text);
+      font-family: "Plus Jakarta Sans", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1100px 520px at 18% -8%, rgba(255, 226, 200, 0.95) 0%, transparent 58%),
+        radial-gradient(1000px 560px at 92% 112%, rgba(215, 235, 205, 0.9) 0%, transparent 55%),
+        var(--sand);
       display: grid;
       place-items: center;
-      padding: 2rem;
+      padding: 1.4rem;
     }
+
+    .scene {
+      width: min(880px, 100%);
+      position: relative;
+      border-radius: 30px;
+      padding: 1.2rem;
+      background: linear-gradient(155deg, rgba(255, 250, 243, 0.92), rgba(247, 237, 226, 0.86));
+      box-shadow: 0 28px 46px rgba(94, 64, 48, 0.18);
+      overflow: hidden;
+    }
+
+    .blob {
+      position: absolute;
+      border-radius: 60% 40% 35% 65% / 50% 42% 58% 50%;
+      opacity: 0.55;
+      pointer-events: none;
+      filter: blur(0.2px);
+    }
+
+    .blob.a { width: 320px; height: 220px; background: rgba(239, 202, 169, 0.9); top: -70px; right: -70px; }
+    .blob.b { width: 300px; height: 240px; background: rgba(215, 235, 205, 0.9); bottom: -90px; left: -70px; }
+
+    header {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.9rem 0.9rem 0.4rem;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: "Fraunces", serif;
+      font-size: clamp(2rem, 4.6vw, 3.2rem);
+      line-height: 1.02;
+      letter-spacing: -0.01em;
+    }
+
+    .tagline {
+      margin: 0.5rem 0 0;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 0.98rem;
+      max-width: 44ch;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.3rem;
+    }
+
+    .icon-btn {
+      border: 1px solid rgba(205, 167, 134, 0.9);
+      background: rgba(255, 250, 243, 0.85);
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
+      font: inherit;
+      cursor: pointer;
+      color: var(--ink);
+      display: grid;
+      place-items: center;
+      transition: transform 140ms ease, border-color 140ms ease;
+    }
+
+    .icon-btn:hover {
+      transform: translateY(-1px);
+      border-color: rgba(43, 31, 24, 0.32);
+    }
+
     main {
-      width: min(860px, 100%);
-      border: 1px solid var(--line);
-      background: linear-gradient(180deg, #151826, #10121a);
-      border-radius: 16px;
-      padding: 2rem;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
-    }
-    h1 { margin-top: 0; font-size: clamp(1.5rem, 4vw, 2.4rem); }
-    p { color: var(--muted); }
-    ul {
-      list-style: none;
-      margin: 1.5rem 0 0;
-      padding: 0;
+      position: relative;
+      z-index: 1;
+      padding: 0.6rem 0.9rem 1rem;
       display: grid;
       gap: 0.9rem;
     }
-    a {
+
+    .platforms {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.55rem;
+      align-items: center;
+    }
+
+    .platform {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.42rem 0.6rem;
+      border-radius: 999px;
+      border: 1px solid rgba(205, 167, 134, 0.75);
+      background: rgba(255, 250, 243, 0.75);
+      position: relative;
+    }
+
+    .platform img {
+      width: 20px;
+      height: 20px;
       display: block;
-      text-decoration: none;
-      color: inherit;
-      border: 1px solid var(--line);
-      background: var(--card);
-      border-radius: 12px;
-      padding: 1rem 1.1rem;
-      transition: transform 200ms ease, border-color 200ms ease;
     }
-    a:hover {
-      transform: translateY(-2px);
+
+    .platform span {
+      font-size: 0.86rem;
+      color: rgba(43, 31, 24, 0.78);
+    }
+
+    .platform[data-tip]:hover::after,
+    .platform[data-tip]:focus-within::after {
+      content: attr(data-tip);
+      position: absolute;
+      left: 0;
+      top: calc(100% + 10px);
+      width: min(280px, 78vw);
+      background: rgba(43, 31, 24, 0.92);
+      color: #fffaf3;
+      border: 1px solid rgba(255, 250, 243, 0.25);
+      padding: 0.6rem 0.7rem;
+      border-radius: 14px;
+      font-size: 0.88rem;
+      line-height: 1.35;
+      z-index: 10;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
+    }
+
+    .card {
+      background: rgba(255, 250, 243, 0.85);
+      border-radius: 22px;
+      padding: 1rem;
+      border: 1px solid rgba(205, 167, 134, 0.85);
+      box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.55);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 190px;
+      gap: 0.8rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 0.35rem;
+      color: rgba(43, 31, 24, 0.72);
+    }
+
+    input,
+    select,
+    button {
+      width: 100%;
+      border: 1px solid rgba(43, 31, 24, 0.28);
+      border-radius: 14px;
+      background: #fff;
+      font: inherit;
+      color: var(--ink);
+      padding: 0.76rem 0.85rem;
+      outline: none;
+      transition: border-color 140ms ease, box-shadow 140ms ease;
+    }
+
+    input:focus,
+    select:focus {
       border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(255, 59, 0, 0.12);
     }
-    small { color: var(--muted); }
+
+    .hint {
+      font-size: 0.84rem;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-top: 0.35rem;
+    }
+
+    .inline {
+      display: flex;
+      gap: 0.7rem;
+      align-items: end;
+    }
+
+    .inline > div { flex: 1; }
+
+    button.primary {
+      background: var(--ink);
+      color: #fffaf3;
+      border: 1px solid var(--ink);
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    button.primary[disabled] {
+      cursor: not-allowed;
+      opacity: 0.72;
+    }
+
+    .progress {
+      margin-top: 0.8rem;
+      height: 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(43, 31, 24, 0.22);
+      background: rgba(255, 255, 255, 0.62);
+      overflow: hidden;
+    }
+
+    .bar {
+      width: 0;
+      height: 100%;
+      background: linear-gradient(90deg, var(--leaf), var(--clay), var(--accent));
+      transition: width 160ms linear;
+    }
+
+    .status {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.8rem;
+      margin-top: 0.65rem;
+      color: rgba(43, 31, 24, 0.78);
+      font-size: 0.92rem;
+    }
+
+    .status strong { color: var(--ink); }
+
+    .results {
+      margin-top: 0.8rem;
+      border-radius: 16px;
+      border: 1px dashed rgba(43, 31, 24, 0.22);
+      background: rgba(255, 245, 234, 0.72);
+      padding: 0.75rem;
+      min-height: 4.4rem;
+      font-size: 0.92rem;
+      line-height: 1.5;
+      color: rgba(43, 31, 24, 0.82);
+      overflow: auto;
+      max-height: 260px;
+      white-space: pre-wrap;
+    }
+
+    .dl {
+      margin-top: 0.75rem;
+      display: grid;
+      gap: 0.45rem;
+    }
+
+    .dl a {
+      display: inline-flex;
+      gap: 0.5rem;
+      align-items: center;
+      text-decoration: none;
+      border: 1px solid rgba(43, 31, 24, 0.22);
+      background: rgba(255, 250, 243, 0.9);
+      padding: 0.55rem 0.65rem;
+      border-radius: 14px;
+      color: var(--ink);
+    }
+
+    .dl a:hover { border-color: rgba(43, 31, 24, 0.35); }
+
+    .popover {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1.2rem;
+      background: rgba(10, 7, 6, 0.25);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+    }
+
+    .popover[aria-hidden="false"] { display: flex; }
+
+    .pop-card {
+      width: min(640px, 100%);
+      border-radius: 22px;
+      background: rgba(255, 250, 243, 0.92);
+      border: 1px solid rgba(43, 31, 24, 0.22);
+      box-shadow: 0 40px 80px rgba(0, 0, 0, 0.18);
+      overflow: hidden;
+    }
+
+    .pop-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.8rem 0.9rem;
+      border-bottom: 1px solid rgba(43, 31, 24, 0.14);
+    }
+
+    .pop-head strong { font-family: "Fraunces", serif; font-size: 1.2rem; }
+
+    .pop-body {
+      padding: 0.9rem;
+      color: rgba(43, 31, 24, 0.82);
+      line-height: 1.55;
+    }
+
+    .pop-body .k {
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .close {
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
+      border: 1px solid rgba(43, 31, 24, 0.22);
+      background: rgba(255, 250, 243, 0.9);
+      cursor: pointer;
+      font: inherit;
+    }
+
+    @media (max-width: 720px) {
+      header { flex-direction: column; align-items: stretch; }
+      .top-actions { justify-content: flex-start; }
+      .row { grid-template-columns: 1fr; }
+      .inline { flex-direction: column; align-items: stretch; }
+    }
   </style>
 </head>
 <body>
-  <main>
-    <h1>yt2mp3 Frontend Option Set</h1>
-    <p>Open each concept:</p>
-    <ul>
-      <li><a href="./1/index.html">/1 Brutalist Poster Console <small>(original)</small></a></li>
-      <li><a href="./2/index.html">/2 Holographic Orbit Panel <small>(keep)</small></a></li>
-      <li><a href="./3/index.html">/3 Organic Clay Studio <small>(original)</small></a></li>
-      <li><a href="./6/index.html">/6 Clay + Ink Minimal Hybrid <small>(new)</small></a></li>
-    </ul>
-  </main>
+  <section class="scene">
+    <div class="blob a" aria-hidden="true"></div>
+    <div class="blob b" aria-hidden="true"></div>
+
+    <header>
+      <div>
+        <h1>yt2mp3</h1>
+        <p class="tagline">Download from YouTube, SoundCloud, X, and Instagram.</p>
+      </div>
+      <div class="top-actions">
+        <button class="icon-btn" id="helpBtn" type="button" aria-label="Help">?</button>
+      </div>
+    </header>
+
+    <main>
+      <div class="platforms" aria-label="supported platforms">
+        <div class="platform" tabindex="0" data-tip="YouTube: audio (MP3/FLAC) or video (MP4).">
+          <img src="./assets/platforms/youtube.svg" alt="YouTube" />
+          <span>YouTube</span>
+        </div>
+        <div class="platform" tabindex="0" data-tip="SoundCloud: MP3 audio downloads.">
+          <img src="./assets/platforms/soundcloud.svg" alt="SoundCloud" />
+          <span>SoundCloud</span>
+        </div>
+        <div class="platform" tabindex="0" data-tip="X/Twitter: MP4 video downloads.">
+          <img src="./assets/platforms/x.svg" alt="X" />
+          <span>X</span>
+        </div>
+        <div class="platform" tabindex="0" data-tip="Instagram: MP4 downloads. Carousels can be first, all, or selected items.">
+          <img src="./assets/platforms/instagram.svg" alt="Instagram" />
+          <span>Instagram</span>
+        </div>
+      </div>
+
+      <form class="card" id="form">
+        <div class="row">
+          <div>
+            <label for="url">URL</label>
+            <input id="url" type="url" required placeholder="Paste a link" />
+            <div class="hint" id="platformHint">Auto-detects platform from the URL.</div>
+          </div>
+          <div>
+            <label for="format">Output</label>
+            <select id="format">
+              <option value="mp3">MP3</option>
+              <option value="flac">FLAC</option>
+              <option value="mp4">MP4</option>
+            </select>
+            <div class="hint" id="formatHint">Options update based on platform.</div>
+          </div>
+        </div>
+
+        <div class="inline" id="audioRow">
+          <div id="qualityWrap">
+            <label for="quality">Quality</label>
+            <select id="quality">
+              <option value="128">128 kbps (smaller, voice ok)</option>
+              <option value="192" selected>192 kbps (recommended)</option>
+              <option value="256">256 kbps (high)</option>
+              <option value="320">320 kbps (largest)</option>
+            </select>
+            <div class="hint" id="qualityText">Bitrate is the MP3 target. Higher = larger files.</div>
+          </div>
+          <div style="min-width: 220px;">
+            <button class="primary" id="go" type="submit">Download</button>
+            <div class="hint">Saved under <code>./downloads/</code>.</div>
+          </div>
+        </div>
+
+        <div id="igRow" style="display:none; margin-top: 0.6rem;">
+          <div class="row">
+            <div>
+              <label for="igMode">Instagram items</label>
+              <select id="igMode">
+                <option value="first" selected>First item</option>
+                <option value="all">All items</option>
+                <option value="select">Select (e.g. 1,3-4)</option>
+              </select>
+              <div class="hint">Only used for Instagram carousel posts.</div>
+            </div>
+            <div id="igIndexWrap" style="display:none;">
+              <label for="igIndex">Selection</label>
+              <input id="igIndex" type="text" placeholder="1,3-4" />
+              <div class="hint">Comma + ranges. 1-based indices.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="progress" aria-hidden="true"><div class="bar" id="bar"></div></div>
+        <div class="status" id="status"><span>Status</span><strong>Idle</strong></div>
+
+        <div class="results" id="results">Run the local server to enable downloads: <code>./venv/bin/python web_server.py</code></div>
+        <div class="dl" id="dl"></div>
+      </form>
+    </main>
+  </section>
+
+  <div class="popover" id="popover" aria-hidden="true">
+    <div class="pop-card" role="dialog" aria-label="Help">
+      <div class="pop-head">
+        <strong>How this UI maps to options</strong>
+        <button class="close" id="closePop" type="button" aria-label="Close">×</button>
+      </div>
+      <div class="pop-body">
+        <div><span class="k">URL</span>: paste a supported link. The UI detects the platform and narrows the available outputs.</div>
+        <div style="margin-top:0.6rem;"><span class="k">YouTube blocks</span>: if you see "confirm you're not a bot", try disabling VPN/proxy (e.g. NordVPN) or switching exit node.</div>
+        <div style="margin-top:0.6rem;"><span class="k">Output</span>:</div>
+        <div>MP3: audio-only export at the selected bitrate.</div>
+        <div>FLAC: lossless audio (bigger files).</div>
+        <div>MP4: video download when the platform supports it.</div>
+        <div style="margin-top:0.6rem;"><span class="k">Instagram items</span>: for carousels, choose first/all/selection (indices like <code>1,3-4</code>).</div>
+        <div style="margin-top:0.6rem;"><span class="k">Downloads</span>: files are written to <code>./downloads/</code> and shown as links after completion.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const urlEl = document.getElementById('url');
+    const formatEl = document.getElementById('format');
+    const qualityEl = document.getElementById('quality');
+    const qualityWrap = document.getElementById('qualityWrap');
+    const qualityText = document.getElementById('qualityText');
+    const audioRow = document.getElementById('audioRow');
+    const igRow = document.getElementById('igRow');
+    const igModeEl = document.getElementById('igMode');
+    const igIndexWrap = document.getElementById('igIndexWrap');
+    const igIndexEl = document.getElementById('igIndex');
+    const platformHint = document.getElementById('platformHint');
+
+    const bar = document.getElementById('bar');
+    const statusEl = document.getElementById('status');
+    const resultsEl = document.getElementById('results');
+    const dlEl = document.getElementById('dl');
+    const goBtn = document.getElementById('go');
+
+    const pop = document.getElementById('popover');
+    document.getElementById('helpBtn').addEventListener('click', () => {
+      pop.setAttribute('aria-hidden', 'false');
+    });
+    document.getElementById('closePop').addEventListener('click', () => {
+      pop.setAttribute('aria-hidden', 'true');
+    });
+    pop.addEventListener('click', (e) => {
+      if (e.target === pop) pop.setAttribute('aria-hidden', 'true');
+    });
+
+    function setStatus(left, right) {
+      statusEl.innerHTML = `<span>${left}</span><strong>${right}</strong>`;
+    }
+
+    function detectPlatform(url) {
+      const u = url.toLowerCase();
+      if (u.includes('youtube.com') || u.includes('youtu.be')) return 'youtube';
+      if (u.includes('soundcloud.com')) return 'soundcloud';
+      if (u.includes('twitter.com') || u.includes('x.com')) return 'x';
+      if (u.includes('instagram.com')) return 'instagram';
+      return 'unknown';
+    }
+
+    function setFormatOptions(platform) {
+      const cur = formatEl.value;
+      const opts = [];
+
+      if (platform === 'youtube' || platform === 'unknown') {
+        opts.push(['mp3', 'MP3']);
+        opts.push(['flac', 'FLAC']);
+        opts.push(['mp4', 'MP4']);
+      } else if (platform === 'soundcloud') {
+        opts.push(['mp3', 'MP3']);
+      } else if (platform === 'x') {
+        opts.push(['mp4', 'MP4']);
+      } else if (platform === 'instagram') {
+        opts.push(['mp4', 'MP4']);
+      }
+
+      formatEl.innerHTML = '';
+      for (const [v, label] of opts) {
+        const o = document.createElement('option');
+        o.value = v;
+        o.textContent = label;
+        formatEl.appendChild(o);
+      }
+
+      if ([...formatEl.options].some((o) => o.value === cur)) formatEl.value = cur;
+      else formatEl.value = opts[0][0];
+
+      const showAudio = formatEl.value === 'mp3';
+      audioRow.style.display = showAudio ? '' : '';
+
+      // Instagram items row toggles only for instagram.
+      igRow.style.display = platform === 'instagram' ? '' : 'none';
+
+      // Quality dropdown only meaningful for MP3.
+      const isMp3 = formatEl.value === 'mp3';
+      qualityEl.disabled = !isMp3;
+      qualityWrap.style.display = isMp3 ? '' : 'none';
+    }
+
+    function refreshUI() {
+      const platform = detectPlatform(urlEl.value);
+      const label = platform === 'unknown' ? 'Unknown platform (try YouTube/SoundCloud/X/Instagram).' : `Detected: ${platform}`;
+      platformHint.textContent = label;
+
+      setFormatOptions(platform);
+
+      // If user switches format away from mp3, keep button visible.
+      // We only disable quality.
+      const isMp3 = formatEl.value === 'mp3';
+      qualityText.textContent = isMp3
+        ? 'Bitrate is the MP3 target. Higher = larger files.'
+        : 'Quality applies to MP3 only.';
+
+      // Instagram selection input
+      igIndexWrap.style.display = (platform === 'instagram' && igModeEl.value === 'select') ? '' : 'none';
+    }
+
+    urlEl.addEventListener('input', refreshUI);
+    formatEl.addEventListener('change', refreshUI);
+    igModeEl.addEventListener('change', refreshUI);
+    refreshUI();
+
+    async function runConvert(payload) {
+      const res = await fetch('/api/convert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      let body;
+      try {
+        body = await res.json();
+      } catch {
+        body = { ok: false, message: `Unexpected response (${res.status})` };
+      }
+
+      if (!res.ok) {
+        const parts = [];
+        if (body && body.message) parts.push(body.message);
+        if (body && body.hint) parts.push(body.hint);
+        if (body && body.logs) parts.push(body.logs);
+        throw new Error(parts.filter(Boolean).join('\n\n') || `Request failed (${res.status})`);
+      }
+
+      return body;
+    }
+
+    document.getElementById('form').addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const url = urlEl.value.trim();
+      if (!url) {
+        setStatus('Status', 'Missing URL');
+        return;
+      }
+
+      const platform = detectPlatform(url);
+      const format = formatEl.value;
+
+      const payload = {
+        url,
+        platform,
+        format,
+        quality_kbps: qualityEl.value,
+        instagram: {
+          mode: igModeEl.value,
+          selection: igIndexEl.value.trim(),
+        },
+      };
+
+      dlEl.innerHTML = '';
+      resultsEl.textContent = '';
+      bar.style.width = '0%';
+      goBtn.disabled = true;
+      setStatus('Working', format.toUpperCase());
+
+      // Soft progress while the server does real work.
+      let p = 0;
+      const timer = setInterval(() => {
+        p = Math.min(92, p + 6 + Math.random() * 10);
+        bar.style.width = `${p}%`;
+      }, 280);
+
+      try {
+        const out = await runConvert(payload);
+        clearInterval(timer);
+        bar.style.width = '100%';
+        setStatus('Done', format.toUpperCase());
+        resultsEl.textContent = out.logs || out.message || 'Complete.';
+
+        if (out.files && out.files.length) {
+          for (const f of out.files) {
+            const a = document.createElement('a');
+            a.href = f.url;
+            a.textContent = `Download: ${f.name}`;
+            a.setAttribute('download', '');
+            dlEl.appendChild(a);
+          }
+        }
+      } catch (err) {
+        clearInterval(timer);
+        bar.style.width = '0%';
+        setStatus('Error', 'See output');
+        resultsEl.textContent = String(err?.message || err);
+      } finally {
+        goBtn.disabled = false;
+      }
+    });
+  </script>
 </body>
 </html>

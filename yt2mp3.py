@@ -42,13 +42,25 @@ def download_youtube_to_mp3(url, output_path=None, quality='best'):
     create_output_dir(output_path)
     
     # Configure yt-dlp options - fixed to prevent multiple downloads
+    #
+    # NOTE: `quality` is used as the MP3 target bitrate (kbps) for ffmpeg
+    # extraction. Historically this arg existed but wasn't applied.
+    preferred_quality = '192'
+    q = str(quality).strip().lower() if quality is not None else ''
+    if q and q != 'best':
+        if q.isdigit():
+            preferred_quality = q
+        elif q == 'worst':
+            preferred_quality = '128'
+
     ydl_opts = {
         'format': 'bestaudio[ext=m4a]/bestaudio[ext=webm]/bestaudio',  # Best audio only, specific formats
+        'js_runtimes': {'deno': {}, 'node': {}},
         'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
-            'preferredquality': '192',
+            'preferredquality': preferred_quality,
         }],
         'noplaylist': True,  # Only download single video, not playlist
         'no_warnings': False,
@@ -81,8 +93,10 @@ def download_youtube_to_mp3(url, output_path=None, quality='best'):
             print(f"✅ Successfully converted: {title}")
             print(f"📁 Saved to: {output_path}")
             return True
-            
     except Exception as e:
+        s = str(e).lower()
+        if "confirm you're not a bot" in s or "confirm you’re not a bot" in s or "sign in to confirm" in s or "login_required" in s:
+            print("Hint: this is often triggered by VPN/proxy IPs (e.g. NordVPN). Try disabling VPN or switching exit node.")
         print(f"❌ Error: {str(e)}")
         return False
 
@@ -96,8 +110,10 @@ def download_youtube_to_flac(url, output_path=None):
 
     create_output_dir(output_path)
 
+
     ydl_opts = {
         'format': 'bestaudio[ext=m4a]/bestaudio[ext=webm]/bestaudio',
+        'js_runtimes': {'deno': {}, 'node': {}},
         'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
@@ -130,6 +146,9 @@ def download_youtube_to_flac(url, output_path=None):
             return True
 
     except Exception as e:
+        s = str(e).lower()
+        if "confirm you're not a bot" in s or "confirm you’re not a bot" in s or "sign in to confirm" in s or "login_required" in s:
+            print("Hint: this is often triggered by VPN/proxy IPs (e.g. NordVPN). Try disabling VPN or switching exit node.")
         print(f"❌ Error: {str(e)}")
         return False
 
@@ -153,6 +172,7 @@ def download_youtube_to_mp4(url, output_path=None):
     # Configure yt-dlp options for MP4 video download
     ydl_opts = {
         'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+        'js_runtimes': {'deno': {}, 'node': {}},
         'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
         'merge_output_format': 'mp4',  # Merge video and audio into MP4
         'noplaylist': True,  # Only download single video, not playlist
@@ -174,19 +194,22 @@ def download_youtube_to_mp4(url, output_path=None):
             info = ydl.extract_info(url, download=False)
             title = info.get('title', 'Unknown')
             duration = int(info.get('duration', 0))
-            
+
             print(f"Title: {title}")
             print(f"Duration: {duration // 60}:{duration % 60:02d}")
             print(f"Downloading video as MP4...")
-            
+
             # Download video
             ydl.download([url])
-            
+
             print(f"✅ Successfully downloaded: {title}")
             print(f"📁 Saved to: {output_path}")
             return True
-            
+
     except Exception as e:
+        s = str(e).lower()
+        if "confirm you're not a bot" in s or "confirm you’re not a bot" in s or "sign in to confirm" in s or "login_required" in s:
+            print("Hint: this is often triggered by VPN/proxy IPs (e.g. NordVPN). Try disabling VPN or switching exit node.")
         print(f"❌ Error: {str(e)}")
         return False
 
@@ -236,7 +259,7 @@ def download_twitter_video(url, output_path=None):
         return False
 
 
-def download_soundcloud_to_mp3(url, output_path=None):
+def download_soundcloud_to_mp3(url, output_path=None, quality_kbps='192'):
     """
     Download SoundCloud track as MP3.
     """
@@ -245,13 +268,18 @@ def download_soundcloud_to_mp3(url, output_path=None):
 
     create_output_dir(output_path)
 
+    preferred_quality = "192"
+    q = str(quality_kbps).strip().lower() if quality_kbps is not None else ""
+    if q and q.isdigit():
+        preferred_quality = q
+
     ydl_opts = {
         'format': 'bestaudio/best',
         'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
-            'preferredquality': '192',
+            'preferredquality': preferred_quality,
         }],
         'noplaylist': True,
         'writethumbnail': False,

@@ -151,6 +151,14 @@ After downloading YouTube MP3s, you can add them to Spotify:
 ### "FFmpeg not found"
 Make sure FFmpeg is installed and in your PATH. See Prerequisites section above.
 
+### "Sign in to confirm you’re not a bot" (YouTube)
+If you see this error sporadically, it’s often your IP getting flagged (VPN/proxy exit nodes are a common cause).
+
+Try:
+- Disable NordVPN (or switch to a different exit node / region).
+- Disable other proxies / “privacy” DNS / corporate gateways temporarily.
+- Retry after a few minutes.
+
 ### "No module named 'yt_dlp'"
 Make sure you've activated your virtual environment and installed dependencies:
 ```bash
