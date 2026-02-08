@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>yt2mp3 /2 Holographic Orbit Panel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Exo+2:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --night: #040814;
+      --glow: #3af7ff;
+      --violet: #7b52ff;
+      --panel: rgba(8, 18, 40, 0.56);
+      --line: rgba(138, 225, 255, 0.45);
+      --text: #d7eeff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: "Exo 2", sans-serif;
+      background:
+        radial-gradient(900px 380px at 80% -20%, rgba(78, 0, 200, 0.38), transparent 70%),
+        radial-gradient(700px 420px at -15% 100%, rgba(0, 178, 255, 0.33), transparent 72%),
+        linear-gradient(160deg, #02040d 0%, #030915 45%, #010208 100%);
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      padding: 1.2rem;
+    }
+    .halo {
+      position: fixed;
+      width: 50vmax;
+      height: 50vmax;
+      border: 1px solid rgba(58, 247, 255, 0.25);
+      border-radius: 50%;
+      filter: blur(1px);
+      animation: spin 26s linear infinite;
+    }
+    .halo::after {
+      content: "";
+      position: absolute;
+      inset: 13%;
+      border: 1px dashed rgba(123, 82, 255, 0.35);
+      border-radius: 50%;
+    }
+    .shell {
+      width: min(940px, 100%);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: var(--panel);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 0 40px rgba(20, 193, 255, 0.24);
+      overflow: hidden;
+      position: relative;
+      isolation: isolate;
+    }
+    .shell::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, rgba(58, 247, 255, 0.12), transparent 35% 65%, rgba(123, 82, 255, 0.15));
+      pointer-events: none;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 1.3rem;
+      border-bottom: 1px solid rgba(138, 225, 255, 0.3);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-size: 0.72rem;
+    }
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--glow);
+      box-shadow: 0 0 14px var(--glow);
+      animation: pulse 1.8s infinite;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.2rem;
+      padding: 1.5rem;
+    }
+    .left h1 {
+      margin: 0;
+      font-family: "Orbitron", sans-serif;
+      font-size: clamp(1.9rem, 5vw, 3.2rem);
+      line-height: 1.08;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .left p {
+      margin: 0.9rem 0 1.3rem;
+      color: #b8d7f5;
+      max-width: 38ch;
+      line-height: 1.55;
+    }
+    .bars {
+      display: flex;
+      gap: 8px;
+      height: 92px;
+      align-items: end;
+      margin-top: 0.8rem;
+    }
+    .bars span {
+      flex: 1;
+      border-radius: 8px 8px 2px 2px;
+      background: linear-gradient(180deg, #92f9ff, #2dc4ff 52%, #6a4bff);
+      animation: bounce 1.8s ease-in-out infinite;
+      box-shadow: 0 0 10px rgba(58, 247, 255, 0.4);
+    }
+    .bars span:nth-child(2) { animation-delay: 120ms; }
+    .bars span:nth-child(3) { animation-delay: 260ms; }
+    .bars span:nth-child(4) { animation-delay: 420ms; }
+    .bars span:nth-child(5) { animation-delay: 160ms; }
+    .panel {
+      border: 1px solid rgba(138, 225, 255, 0.32);
+      border-radius: 14px;
+      padding: 1rem;
+      background: rgba(7, 14, 31, 0.68);
+    }
+    .panel label {
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #9ac7e6;
+    }
+    .panel input,
+    .panel select,
+    .panel button {
+      width: 100%;
+      margin-top: 0.4rem;
+      margin-bottom: 0.9rem;
+      border: 1px solid rgba(146, 234, 255, 0.45);
+      border-radius: 10px;
+      font: inherit;
+      color: var(--text);
+      background: rgba(7, 13, 26, 0.92);
+      padding: 0.75rem 0.8rem;
+    }
+    .panel button {
+      background: linear-gradient(90deg, #267fff, #5d59ff 55%, #24d5ff);
+      border: 0;
+      margin-top: 0.3rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: filter 200ms ease, transform 180ms ease;
+    }
+    .panel button:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+    .readout {
+      border: 1px solid rgba(146, 234, 255, 0.45);
+      border-radius: 10px;
+      padding: 0.7rem;
+      min-height: 4.4rem;
+      font-size: 0.87rem;
+      line-height: 1.4;
+      color: #9dc8e6;
+      background: rgba(2, 7, 18, 0.86);
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    @keyframes bounce {
+      0%, 100% { height: 16%; }
+      50% { height: 100%; }
+    }
+    @media (max-width: 860px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="halo" aria-hidden="true"></div>
+  <section class="shell">
+    <header>
+      <span>OPTION /2 HOLOGRAPHIC ORBIT</span>
+      <div class="dot" aria-hidden="true"></div>
+    </header>
+    <div class="layout">
+      <article class="left">
+        <h1>Signal-Grade Conversion Gateway</h1>
+        <p>A luminous control surface inspired by sci-fi instrumentation. The idea is to make link conversion feel like a live transmission capture through yt2mp3.</p>
+        <div class="bars" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+      </article>
+      <form class="panel" id="form">
+        <label for="url">Transmission URL</label>
+        <input id="url" type="url" required placeholder="https://youtu.be/..." />
+
+        <label for="mode">Extraction Mode</label>
+        <select id="mode">
+          <option value="mp3">Audio MP3</option>
+          <option value="flac">Audio FLAC</option>
+          <option value="mp4">Video MP4</option>
+        </select>
+
+        <button type="submit">Initiate Link</button>
+        <div class="readout" id="readout">Idle. Awaiting target stream.</div>
+      </form>
+    </div>
+  </section>
+
+  <script>
+    const form = document.getElementById('form');
+    const readout = document.getElementById('readout');
+
+    const messages = [
+      'Handshake accepted. Pulling media metadata...',
+      'Stream locked. Selecting best available format...',
+      'Passing payload to yt2mp3 processing core...',
+      'Packaging file and checking output integrity...'
+    ];
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const url = document.getElementById('url').value.trim();
+      const mode = document.getElementById('mode').value;
+
+      if (!url) {
+        readout.textContent = 'No target URL detected.';
+        return;
+      }
+
+      let step = 0;
+      readout.textContent = messages[step];
+      const timer = setInterval(() => {
+        step += 1;
+        if (step < messages.length) {
+          readout.textContent = messages[step];
+          return;
+        }
+
+        clearInterval(timer);
+        readout.textContent = `Complete. ${mode.toUpperCase()} artifact staged for download.`;
+      }, 700);
+    });
+  </script>
+</body>
+</html>
