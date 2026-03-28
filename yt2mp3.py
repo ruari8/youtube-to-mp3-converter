@@ -24,23 +24,37 @@ def sanitize_filename(filename):
     return filename
 
 
-def download_youtube_to_mp3(url, output_path=None, quality='best'):
+def _is_bot_error(e):
+    """Check if an exception is a YouTube bot-detection error."""
+    s = str(e).lower()
+    return ("confirm you're not a bot" in s or "sign in to confirm" in s
+            or "login_required" in s)
+
+
+def _apply_cookies(ydl_opts, cookies_from_browser):
+    """Apply cookie settings to yt-dlp options."""
+    if cookies_from_browser:
+        ydl_opts['cookiesfrombrowser'] = (cookies_from_browser,)
+
+
+def download_youtube_to_mp3(url, output_path=None, quality='best', cookies_from_browser=None):
     """
     Download YouTube video and convert to MP3.
-    
+
     Args:
         url (str): YouTube video URL
         output_path (str): Directory to save the MP3 file
         quality (str): Audio quality ('best', 'worst', or specific format)
-    
+        cookies_from_browser (str): Browser to extract cookies from (e.g. 'chrome', 'safari')
+
     Returns:
         bool: True if successful, False otherwise
     """
     if output_path is None:
         output_path = os.path.join(os.path.expanduser('~'), 'Downloads', 'YouTube_MP3')
-    
+
     create_output_dir(output_path)
-    
+
     # Configure yt-dlp options - fixed to prevent multiple downloads
     #
     # NOTE: `quality` is used as the MP3 target bitrate (kbps) for ffmpeg
@@ -56,6 +70,7 @@ def download_youtube_to_mp3(url, output_path=None, quality='best'):
     ydl_opts = {
         'format': 'bestaudio[ext=m4a]/bestaudio[ext=webm]/bestaudio',  # Best audio only, specific formats
         'js_runtimes': {'deno': {}, 'node': {}},
+        'remote_components': {'ejs:github'},
         'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
@@ -75,33 +90,36 @@ def download_youtube_to_mp3(url, output_path=None, quality='best'):
         'extract_flat': False,     # Full extraction, not just metadata
         'ignoreerrors': False,     # Stop on errors rather than continue
     }
-    
+    _apply_cookies(ydl_opts, cookies_from_browser)
+
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             # Get video info first
             info = ydl.extract_info(url, download=False)
             title = info.get('title', 'Unknown')
             duration = int(info.get('duration', 0))
-            
+
             print(f"Title: {title}")
             print(f"Duration: {duration // 60}:{duration % 60:02d}")
             print(f"Downloading and converting to MP3...")
-            
+
             # Download and convert
             ydl.download([url])
-            
+
             print(f"✅ Successfully converted: {title}")
             print(f"📁 Saved to: {output_path}")
             return True
     except Exception as e:
-        s = str(e).lower()
-        if "confirm you're not a bot" in s or "confirm you’re not a bot" in s or "sign in to confirm" in s or "login_required" in s:
+        if _is_bot_error(e) and not cookies_from_browser:
+            print("⚠️  Bot detection hit -- retrying with Chrome cookies...")
+            return download_youtube_to_mp3(url, output_path, quality, cookies_from_browser='chrome')
+        if _is_bot_error(e):
             print("Hint: this is often triggered by VPN/proxy IPs (e.g. NordVPN). Try disabling VPN or switching exit node.")
         print(f"❌ Error: {str(e)}")
         return False
 
 
-def download_youtube_to_flac(url, output_path=None):
+def download_youtube_to_flac(url, output_path=None, cookies_from_browser=None):
     """
     Download YouTube video and convert to lossless FLAC.
     """
@@ -110,10 +128,10 @@ def download_youtube_to_flac(url, output_path=None):
 
     create_output_dir(output_path)
 
-
     ydl_opts = {
         'format': 'bestaudio[ext=m4a]/bestaudio[ext=webm]/bestaudio',
         'js_runtimes': {'deno': {}, 'node': {}},
+        'remote_components': {'ejs:github'},
         'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
@@ -128,6 +146,7 @@ def download_youtube_to_flac(url, output_path=None):
         'embed_chapters': False,
         'split_chapters': False,
     }
+    _apply_cookies(ydl_opts, cookies_from_browser)
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -146,33 +165,37 @@ def download_youtube_to_flac(url, output_path=None):
             return True
 
     except Exception as e:
-        s = str(e).lower()
-        if "confirm you're not a bot" in s or "confirm you’re not a bot" in s or "sign in to confirm" in s or "login_required" in s:
+        if _is_bot_error(e) and not cookies_from_browser:
+            print("⚠️  Bot detection hit -- retrying with Chrome cookies...")
+            return download_youtube_to_flac(url, output_path, cookies_from_browser='chrome')
+        if _is_bot_error(e):
             print("Hint: this is often triggered by VPN/proxy IPs (e.g. NordVPN). Try disabling VPN or switching exit node.")
         print(f"❌ Error: {str(e)}")
         return False
 
 
-def download_youtube_to_mp4(url, output_path=None):
+def download_youtube_to_mp4(url, output_path=None, cookies_from_browser=None):
     """
     Download YouTube video as MP4.
-    
+
     Args:
         url (str): YouTube video URL
         output_path (str): Directory to save the MP4 file
-    
+        cookies_from_browser (str): Browser to extract cookies from (e.g. 'chrome', 'safari')
+
     Returns:
         bool: True if successful, False otherwise
     """
     if output_path is None:
         output_path = os.path.join(os.path.expanduser('~'), 'Downloads', 'YouTube_MP4')
-    
+
     create_output_dir(output_path)
-    
+
     # Configure yt-dlp options for MP4 video download
     ydl_opts = {
         'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
         'js_runtimes': {'deno': {}, 'node': {}},
+        'remote_components': {'ejs:github'},
         'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
         'merge_output_format': 'mp4',  # Merge video and audio into MP4
         'noplaylist': True,  # Only download single video, not playlist
@@ -187,7 +210,8 @@ def download_youtube_to_mp4(url, output_path=None):
         'split_chapters': False,   # Don't split into chapters
         'extract_flat': False,     # Full extraction, not just metadata
     }
-    
+    _apply_cookies(ydl_opts, cookies_from_browser)
+
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             # Get video info first
@@ -207,8 +231,10 @@ def download_youtube_to_mp4(url, output_path=None):
             return True
 
     except Exception as e:
-        s = str(e).lower()
-        if "confirm you're not a bot" in s or "confirm you’re not a bot" in s or "sign in to confirm" in s or "login_required" in s:
+        if _is_bot_error(e) and not cookies_from_browser:
+            print("⚠️  Bot detection hit -- retrying with Chrome cookies...")
+            return download_youtube_to_mp4(url, output_path, cookies_from_browser='chrome')
+        if _is_bot_error(e):
             print("Hint: this is often triggered by VPN/proxy IPs (e.g. NordVPN). Try disabling VPN or switching exit node.")
         print(f"❌ Error: {str(e)}")
         return False
@@ -432,6 +458,13 @@ Examples:
         help='For Instagram carousels: indices or ranges (e.g., 1,3-5)'
     )
     parser.add_argument(
+        '--cookies-from-browser',
+        default=None,
+        metavar='BROWSER',
+        help='Browser to extract cookies from (e.g. chrome, safari, firefox). '
+             'Auto-retries with chrome on bot detection if not specified.'
+    )
+    parser.add_argument(
         '--version',
         action='version',
         version='Media Downloader 1.2.0'
@@ -442,19 +475,21 @@ Examples:
     url = args.url
     success = False
 
+    cookies = args.cookies_from_browser
+
     if 'youtube.com' in url or 'youtu.be' in url:
         if args.mp4:
             print("🎬 YouTube to MP4 Downloader")
             print("=" * 40)
-            success = download_youtube_to_mp4(url, args.output)
+            success = download_youtube_to_mp4(url, args.output, cookies_from_browser=cookies)
         elif args.flac:
             print("🎵 YouTube to FLAC Converter (Lossless)")
             print("=" * 40)
-            success = download_youtube_to_flac(url, args.output)
+            success = download_youtube_to_flac(url, args.output, cookies_from_browser=cookies)
         else:
             print("🎵 YouTube to MP3 Converter")
             print("=" * 40)
-            success = download_youtube_to_mp3(url, args.output, args.quality)
+            success = download_youtube_to_mp3(url, args.output, args.quality, cookies_from_browser=cookies)
     elif 'soundcloud.com' in url:
         print("🎧 SoundCloud to MP3 Downloader")
         print("=" * 40)
