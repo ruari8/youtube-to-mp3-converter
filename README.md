@@ -1,106 +1,91 @@
-# Media Downloader 🎵
+# yt2mp3
 
-A simple, fast command-line tool to download media from various platforms.
-- Download YouTube videos and convert them to MP3 or lossless FLAC.
-- Download YouTube videos as MP4.
-- Download SoundCloud tracks as MP3.
-- Download videos from Twitter/X as MP4 files.
-- Download Instagram posts and carousels.
+A small local media downloader for saving online audio/video into files that are easy to keep in a personal library.
 
-Perfect for saving your favorite online content for offline access!
+I mostly use it to turn YouTube concert clips and live sessions into MP3 files, then add those files to Spotify via Local Files. The CLI also supports YouTube MP4/FLAC, SoundCloud MP3, X/Twitter videos, Instagram posts/carousels, and a lightweight local web UI.
 
 ## Features
 
-- ✅ **Multi-Platform** - Supports YouTube, SoundCloud, Twitter/X, and Instagram.
-- ✅ **Multiple formats** - MP3, FLAC (lossless), or MP4 video.
-- ✅ **No time limits** - Download videos of any length.
-- ✅ **High quality** - 192kbps MP3 or lossless FLAC for audio.
-- ✅ **Simple command-line interface** - Just `yt2mp3 <url>`
-- ✅ **Automatic file naming** - Uses video title or post info.
-- ✅ **Custom output directory** - Save files wherever you want.
-- ✅ **Safe filename handling** - Automatically sanitizes invalid characters.
+- YouTube to MP3, FLAC, or MP4
+- SoundCloud to MP3
+- X/Twitter video downloads
+- Instagram post and carousel downloads
+- Optional local web UI backed by a stdlib-only Python server
+- Configurable output folders
+- Browser-cookie fallback for YouTube bot-detection errors
 
-## Quick Start
+## Requirements
 
-### Option 1: Simple Usage (No Installation)
+- Python 3.10+
+- FFmpeg and FFprobe on your `PATH`
+- `yt-dlp`
+
+Install FFmpeg:
+
 ```bash
-# Activate your virtual environment
-source venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Download a YouTube video as MP3
-python yt2mp3.py "https://www.youtube.com/watch?v=VIDEO_ID"
-
-# Download a Twitter video as MP4
-python yt2mp3.py "https://x.com/user/status/12345"
-```
-
-### Option 2: Install as Command-Line Tool
-```bash
-# Activate your virtual environment
-source venv/bin/activate
-
-# Install the tool
-pip install -e .
-
-# Now you can use it from anywhere
-yt2mp3 "https://www.youtube.com/watch?v=VIDEO_ID"
-yt2mp3 "https://x.com/user/status/12345"
-```
-
-## Prerequisites
-
-You need **FFmpeg** installed on your system for video and audio processing:
-
-### macOS (using Homebrew)
-```bash
+# macOS
 brew install ffmpeg
-```
 
-### Linux (Ubuntu/Debian)
-```bash
+# Ubuntu/Debian
 sudo apt update
 sudo apt install ffmpeg
 ```
 
-### Windows
-Download from [https://ffmpeg.org/download.html](https://ffmpeg.org/download.html) or use chocolatey:
+## Setup
+
 ```bash
-choco install ffmpeg
+git clone https://github.com/ruari8/youtube-to-mp3-converter.git
+cd youtube-to-mp3-converter
+
+python3 -m venv venv
+source venv/bin/activate
+
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+python -m pip install -e .
 ```
 
-## Usage Examples
+After editable install, the `yt2mp3` command is available from the active virtualenv.
 
-### Download YouTube video as MP3 (default)
+## CLI Usage
+
+Download a YouTube video as MP3:
+
 ```bash
-yt2mp3 "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+yt2mp3 "https://www.youtube.com/watch?v=VIDEO_ID"
 ```
 
-### Download YouTube video as lossless FLAC
+Choose an MP3 bitrate:
+
 ```bash
-yt2mp3 "https://www.youtube.com/watch?v=dQw4w9WgXcQ" --flac
+yt2mp3 "https://www.youtube.com/watch?v=VIDEO_ID" -q 320
 ```
 
-### Download YouTube video as MP4
+Save directly into a Spotify Local Files folder:
+
 ```bash
-yt2mp3 "https://www.youtube.com/watch?v=dQw4w9WgXcQ" --mp4
+yt2mp3 "https://www.youtube.com/watch?v=VIDEO_ID" -o "$HOME/Music/YouTube Local Files"
 ```
 
-### Download SoundCloud track as MP3
+Download YouTube as FLAC or MP4:
+
+```bash
+yt2mp3 "https://www.youtube.com/watch?v=VIDEO_ID" --flac
+yt2mp3 "https://www.youtube.com/watch?v=VIDEO_ID" --mp4
+```
+
+Download from other supported platforms:
+
 ```bash
 yt2mp3 "https://soundcloud.com/artist/track-name"
+yt2mp3 "https://x.com/user/status/12345"
+yt2mp3 "https://www.instagram.com/p/POST_ID/"
 ```
 
-### Download Twitter/X video as MP4
-```bash
-yt2mp3 "https://x.com/StHydrated/status/1930422978228912172"
-```
+Instagram carousel options:
 
-### Download Instagram post
 ```bash
-# First item only (default)
+# First item only, which is the default
 yt2mp3 "https://www.instagram.com/p/POST_ID/"
 
 # All carousel items
@@ -110,76 +95,86 @@ yt2mp3 "https://www.instagram.com/p/POST_ID/" --ig-all
 yt2mp3 "https://www.instagram.com/p/POST_ID/" --ig-index 1,3-4
 ```
 
-### Custom output directory
+If YouTube asks yt-dlp to sign in or confirm you are not a bot, pass browser cookies explicitly:
+
 ```bash
-yt2mp3 "https://www.youtube.com/watch?v=dQw4w9WgXcQ" -o ~/Music/YouTube
+yt2mp3 "https://www.youtube.com/watch?v=VIDEO_ID" --cookies-from-browser chrome
+yt2mp3 "https://www.youtube.com/watch?v=VIDEO_ID" --cookies-from-browser safari
 ```
 
-### Using short YouTube URLs
+## Local Web UI
+
+Run the local server:
+
 ```bash
-yt2mp3 "https://youtu.be/dQw4w9WgXcQ"
+python web_server.py
 ```
 
-### Help and options
+Or, after `python -m pip install -e .`:
+
 ```bash
-yt2mp3 --help
+yt2mp3-web
 ```
 
-## Default Behavior
+Then open:
 
-| Platform | Output Format | Default Location |
-|----------|---------------|------------------|
-| YouTube | MP3 (192kbps) | `~/Downloads/YouTube_MP3/` |
-| YouTube `--flac` | FLAC (lossless) | `~/Downloads/YouTube_FLAC/` |
-| YouTube `--mp4` | MP4 (video) | `~/Downloads/YouTube_MP4/` |
-| SoundCloud | MP3 (192kbps) | `~/Downloads/SoundCloud_MP3/` |
-| Twitter/X | MP4 | `~/Downloads/Twitter_Videos/` |
-| Instagram | MP4 | `~/Downloads/Instagram/` |
+```text
+http://127.0.0.1:8008/
+```
 
-## For Spotify Local Files
+The web UI writes finished files under the repo-local `downloads/` directory. That folder is intentionally gitignored.
 
-After downloading YouTube MP3s, you can add them to Spotify:
+## Default Output Locations
 
-1. Place MP3 files in a folder (e.g., `~/Music/YouTube/`)
-2. Open Spotify → Settings → Local Files
-3. Add the folder containing your MP3s
-4. The files will appear in your "Local Files" playlist
-5. You can add them to regular playlists or download for offline use
+When no output directory is provided, the CLI uses:
 
-## Troubleshooting
+| Platform / mode | Output folder |
+| --- | --- |
+| YouTube MP3 | `~/Downloads/YouTube_MP3/` |
+| YouTube FLAC | `~/Downloads/YouTube_FLAC/` |
+| YouTube MP4 | `~/Downloads/YouTube_MP4/` |
+| SoundCloud MP3 | `~/Downloads/SoundCloud_MP3/` |
+| X/Twitter MP4 | `~/Downloads/Twitter_Videos/` |
+| Instagram media | `~/Downloads/Instagram/` |
 
-### "FFmpeg not found"
-Make sure FFmpeg is installed and in your PATH. See Prerequisites section above.
+## Spotify Local Files Workflow
 
-### "Sign in to confirm you’re not a bot" (YouTube)
-If you see this error sporadically, it’s often your IP getting flagged (VPN/proxy exit nodes are a common cause).
+1. Download MP3s into a stable folder, for example `~/Music/YouTube Local Files`.
+2. Open Spotify settings.
+3. Enable Local Files.
+4. Add the folder that contains the downloaded MP3s.
+5. Add tracks from Spotify's Local Files view into normal playlists.
 
-Try:
-- Disable NordVPN (or switch to a different exit node / region).
-- Disable other proxies / “privacy” DNS / corporate gateways temporarily.
-- Retry after a few minutes.
+This repo does not write Spotify metadata or sync anything to Spotify. It only creates local audio/video files.
 
-### "No module named 'yt_dlp'"
-Make sure you've activated your virtual environment and installed dependencies:
+## Maintenance Notes
+
+`yt-dlp` needs frequent updates because supported sites change their markup and extraction rules. If downloads start failing unexpectedly, update dependencies first:
+
 ```bash
 source venv/bin/activate
-pip install -r requirements.txt
+python -m pip install --upgrade yt-dlp
 ```
 
-### Permission errors
-Make sure you have write permissions to the output directory.
+For YouTube bot-detection errors, common fixes are:
 
-## Technical Details
+- Disable VPN/proxy exit nodes temporarily.
+- Try a different network.
+- Use `--cookies-from-browser chrome`, `safari`, or `firefox`.
+- Wait a few minutes and retry if YouTube is rate-limiting the current IP.
 
-- **Backend**: Uses `yt-dlp` (the actively maintained fork of `youtube-dl`)
-- **Audio format**: MP3 at 192kbps or lossless FLAC
-- **Video handling**: Downloads best available audio/video quality
-- **File safety**: Automatically handles special characters in titles
+## Development
 
-## Legal Notice
+Basic checks:
 
-This tool is for personal use only. Please respect the Terms of Service and copyright laws of the platforms you are downloading from. Only download content you have permission to download.
+```bash
+python -m py_compile yt2mp3.py web_server.py
+yt2mp3 --help
+python web_server.py --help
+```
 
----
+There is no formal test suite yet. Most verification is currently manual because the behavior depends on third-party sites and FFmpeg.
 
-Enjoy your media downloads! 🎶
+## Legal
+
+Use this for personal archiving and only download content you have permission to download. Respect platform terms and copyright law.

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Media Downloader
-A simple command-line tool to download YouTube videos as MP3s or MP4s, Twitter videos as MP4s, and Instagram media.
+A simple command-line tool to download YouTube videos as MP3s or MP4s, X/Twitter videos as MP4s, and Instagram media.
 """
 
 import os
@@ -245,7 +245,7 @@ def download_twitter_video(url, output_path=None):
     Download a video from a Tweet URL.
 
     Args:
-        url (str): Twitter video URL
+        url (str): X/Twitter video URL
         output_path (str): Directory to save the MP4 file
 
     Returns:
@@ -392,7 +392,7 @@ def download_instagram_media(url, output_path=None, download_all=False, playlist
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Download media: YouTube (MP3, FLAC, or MP4), Twitter (MP4), Instagram (MP4), SoundCloud (MP3).",
+        description="Download media: YouTube (MP3, FLAC, or MP4), X/Twitter (MP4), Instagram (MP4), SoundCloud (MP3).",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -410,7 +410,7 @@ Examples:
   # Download SoundCloud track as MP3
   yt2mp3 https://soundcloud.com/artist/track-name
 
-  # Download Twitter video as MP4
+  # Download X/Twitter video as MP4
   yt2mp3 https://twitter.com/user/status/12345
   yt2mp3 https://x.com/user/status/12345 -o ./videos
 
@@ -425,7 +425,7 @@ Examples:
         """
     )
     
-    parser.add_argument('url', help='YouTube, Twitter, Instagram, or SoundCloud URL')
+    parser.add_argument('url', help='YouTube, X/Twitter, Instagram, or SoundCloud URL')
     parser.add_argument(
         '-o', '--output',
         default=None,
@@ -433,8 +433,8 @@ Examples:
     )
     parser.add_argument(
         '-q', '--quality',
-        default='best',
-        help='Audio quality for YouTube MP3 downloads (default: best)'
+        default='192',
+        help='MP3 bitrate in kbps for YouTube downloads (default: 192)'
     )
     parser.add_argument(
         '--mp4',
@@ -467,7 +467,7 @@ Examples:
     parser.add_argument(
         '--version',
         action='version',
-        version='Media Downloader 1.2.0'
+        version='yt2mp3 1.2.1'
     )
     
     args = parser.parse_args()
@@ -495,7 +495,7 @@ Examples:
         print("=" * 40)
         success = download_soundcloud_to_mp3(url, args.output)
     elif 'twitter.com' in url or 'x.com' in url:
-        print("🐦 Twitter Video Downloader")
+        print("🐦 X/Twitter Video Downloader")
         print("=" * 40)
         success = download_twitter_video(url, args.output)
     elif 'instagram.com' in url:
@@ -508,7 +508,7 @@ Examples:
             playlist_items=args.ig_index,
         )
     else:
-        print("❌ Error: Please provide a valid YouTube, Twitter, Instagram, or SoundCloud URL.")
+        print("❌ Error: Please provide a valid YouTube, X/Twitter, Instagram, or SoundCloud URL.")
         sys.exit(1)
 
     if success:
