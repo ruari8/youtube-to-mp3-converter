@@ -14,7 +14,7 @@ setup(
     author="Ruari",
     py_modules=["yt2mp3", "web_server"],
     install_requires=[
-        "yt-dlp>=2024.3.10",
+        "yt-dlp[default]>=2026.8.19",
     ],
     entry_points={
         "console_scripts": [
