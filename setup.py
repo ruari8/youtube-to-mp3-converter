@@ -12,7 +12,7 @@ setup(
     long_description=(ROOT / "README.md").read_text(encoding="utf-8"),
     long_description_content_type="text/markdown",
     author="Ruari",
-    py_modules=["yt2mp3", "web_server"],
+    py_modules=["yt2mp3", "web_server", "audio_library"],
     install_requires=[
         "yt-dlp[default]>=2026.8.19",
     ],

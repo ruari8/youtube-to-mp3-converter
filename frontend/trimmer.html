@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Sound cut · Your soundboard workshop</title>
+  <link rel="stylesheet" href="/assets/trimmer/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="Sound cut home"><span class="brand-icon">⅂</span> sound cut<span class="brand-dot">.</span></a>
+    <span class="top-caption">YOUR SOUNDBOARD WORKSHOP</span>
+    <nav id="app-tabs" class="app-tabs" aria-label="Workspace" role="tablist" hidden><button id="tab-editor" role="tab" aria-selected="true" aria-controls="editor-panel">Editor</button><button id="tab-board" role="tab" aria-selected="false" aria-controls="board-panel" tabindex="-1">Soundboard <span id="board-count" class="count">0</span></button></nav>
+    <span class="local-badge"><i></i> Runs on your computer</span>
+  </header>
+  <div class="workspace">
+    <aside class="library">
+      <div class="library-heading"><h2>Your sounds</h2><span id="track-count" class="count">0</span></div>
+      <p class="muted library-intro">Full tracks. Any cut you like.</p>
+      <form id="youtube-form" class="youtube-form" hidden><label for="youtube-url">ADD FROM YOUTUBE</label><input id="youtube-url" type="url" placeholder="Paste a YouTube link" required maxlength="2048"><button id="youtube-add" type="submit" class="primary">＋ Add to library</button><p>Full video · Up to 10 minutes</p><p id="import-connection">New imports need Ruari’s Mac awake. Saved sounds work anytime.</p><div id="import-status" role="status" aria-live="polite"></div><div id="import-jobs"></div></form>
+      <button id="import" class="import-button">＋ Add audio files</button>
+      <input id="files" type="file" accept="audio/*,.mp3,.wav,.m4a,.ogg,.flac" multiple hidden>
+      <nav id="track-list" aria-label="Audio library"></nav>
+      <div class="library-note"><span class="note-icon">↳</span><p>Drop audio files anywhere.<br>Your originals stay untouched.</p></div>
+      <div class="privacy-note">No uploads. No account. Just your sounds.</div>
+    </aside>
+    <main>
+      <div id="editor-panel" role="tabpanel" aria-labelledby="tab-editor">
+      <div class="eyebrow">MAKE IT YOURS</div>
+      <div class="intro"><h1>A little more.<br>A little less.<em> Your cut.</em></h1><p>Find the moment, give it room to breathe,<br>then make it a button.</p></div>
+      <section class="editor" aria-label="Audio editor">
+        <div class="track-heading"><div><span id="track-kind" class="eyebrow">CHOOSE A SOUND</span><h2 id="track-title">Pick a track to get started</h2><p id="track-info" class="muted">Or add an MP3, WAV or M4A of your own.</p></div><span id="track-number" class="track-number">—</span></div>
+        <div id="status" role="status" aria-live="polite">Loading your library…</div>
+        <div id="video-preview" class="video-preview" hidden>
+          <video id="source-video" muted playsinline preload="metadata" aria-label="Full source video"></video>
+          <div class="video-caption"><span>FULL VIDEO PREVIEW</span><span>Use the controls below · Downloads are audio only</span></div>
+        </div>
+        <fieldset id="controls" disabled>
+          <legend class="sr-only">Trim controls</legend>
+          <div class="wave-toolbar"><span><i class="orange-dot"></i> <strong id="selection-summary">Your selection</strong></span><div class="zoom-controls"><button id="zoom-out" title="Zoom out" aria-label="Zoom out">−</button><button id="zoom-in" title="Zoom in" aria-label="Zoom in">＋</button><button id="fit-selection">Fit cut</button><button id="show-all">Full track</button></div></div>
+          <div id="timeline" class="timeline">
+            <canvas id="waveform" aria-label="Audio waveform. Click to move the playhead."></canvas>
+            <button id="start-handle" class="trim-handle start-handle" role="slider" aria-label="Start boundary" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0"><span>IN</span><b>Ⅱ</b></button>
+            <button id="end-handle" class="trim-handle end-handle" role="slider" aria-label="End boundary" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0"><span>OUT</span><b>Ⅱ</b></button>
+            <div id="empty-wave">Your waveform will appear here</div>
+          </div>
+          <div class="pan-row"><label for="pan">Move through track</label><input id="pan" type="range" min="0" max="1" step="0.01" value="0"></div>
+          <div class="overview-label"><span>FULL TRACK OVERVIEW</span><span id="full-duration">0:00</span></div>
+          <canvas id="overview" aria-label="Full track overview. Click to jump to a moment."></canvas>
+          <div class="transport"><div class="play-buttons"><button id="preview" class="primary play">▶ Play cut</button><button id="play-full" class="secondary">Play from cursor</button></div><div class="playback-time"><span id="playhead">0:00.00</span><span class="muted"> / <span id="transport-duration">0:00</span></span></div><label class="loop"><input id="loop" type="checkbox"> Loop cut</label></div>
+          <div class="cut-settings">
+            <div class="time-control"><label for="start">START <span>seconds</span></label><div class="time-input"><button data-nudge="start:-0.1" aria-label="Start 0.1 seconds earlier">−</button><input id="start" type="number" min="0" step="0.01" value="0"><button data-nudge="start:0.1" aria-label="Start 0.1 seconds later">＋</button></div><button id="set-start" class="text-button">Set to playhead <kbd>I</kbd></button></div>
+            <div class="time-control"><label for="end">END <span>seconds</span></label><div class="time-input"><button data-nudge="end:-0.1" aria-label="End 0.1 seconds earlier">−</button><input id="end" type="number" min="0" step="0.01" value="0"><button data-nudge="end:0.1" aria-label="End 0.1 seconds later">＋</button></div><button id="set-end" class="text-button">Set to playhead <kbd>O</kbd></button></div>
+            <div class="length"><span>CUT LENGTH</span><strong id="cut-length">0.00<small>s</small></strong><button id="reset" class="text-button">Select whole track</button></div>
+          </div>
+          <div id="presets" class="presets"></div>
+          <div class="export-row"><div class="filename-field"><label for="filename">CLIP NAME</label><input id="filename" type="text" placeholder="my-sound-effect" maxlength="120"></div><div class="format-field"><label for="format">FORMAT</label><select id="format"><option value="mp3">MP3 · 320 kbps</option><option value="wav">WAV · lossless PCM</option></select></div><button id="export" class="primary export-button">↓ Download cut</button></div>
+          <div id="save-board-row" class="save-board-row" hidden><button id="save-board" class="secondary">＋ Save to soundboard</button><span id="save-board-status" role="status" aria-live="polite">Keep this cut for everyone using the site.</span></div>
+        </fieldset>
+        <div class="editor-footer"><span>Drag the orange handles to change your cut.</span><span><kbd>Space</kbd> play / pause <span class="shortcut-gap"><kbd>←</kbd> <kbd>→</kbd> move cursor</span></span></div>
+      </section>
+      <section id="exports" class="exports" hidden><div class="section-heading"><h2>Your cuts this session</h2><span class="muted">Listen again or download another copy.</span></div><div id="export-list"></div></section>
+      </div>
+      <section id="board-panel" role="tabpanel" aria-labelledby="tab-board" hidden>
+        <div class="eyebrow">READY WHEN YOU ARE</div><div class="intro"><h1>Your sounds.<br><em> On tap.</em></h1><p>Press a pad to play.<br>Press it again to stop.</p></div>
+        <div class="board-toolbar"><label class="board-search"><span class="sr-only">Find a sound</span><input id="board-search" type="search" placeholder="Find a sound…"></label><label class="board-volume">Volume <input id="board-volume" type="range" min="0" max="1" step="0.05" value="0.8"></label><button id="board-stop" class="secondary">■ Stop all <kbd>Esc</kbd></button></div>
+        <p class="board-help">Keys 1–9 play the first nine visible pads. Save a cut in the Editor to add your own.</p>
+        <div id="board-status" class="board-status" role="status" aria-live="polite"></div>
+        <div id="board-grid" class="board-grid"></div>
+        <div id="board-empty" class="board-empty" hidden>No sounds here yet. Open the Editor, choose your cut, and save it to the soundboard.</div>
+      </section>
+      <footer class="page-footer"><span>Made for the perfect button press.</span><details><summary>Help & credits</summary><p>Choose a full track, drag IN and OUT, then play the cut before downloading. Use the overview to move around longer tracks. The numeric controls adjust boundaries by 0.1 seconds; you can type exact values.</p><p>Your cut positions are remembered in this browser when storage is available. Downloaded clips are permanent; preview links last until you close this page. Added files must be selected again after reopening.</p><p>MP3 encoding uses <a href="https://github.com/zhuker/lamejs">lamejs 1.2.1</a> and <a href="https://lame.sourceforge.net/">LAME</a>, under the LGPL. WAV exports preserve the decoded audio without further lossy compression.</p></details></footer>
+    </main>
+  </div>
+  <div id="drop-overlay" hidden>Drop your audio here<span>MP3, WAV, M4A and other browser-supported audio</span></div>
+  <script id="bundled-library" type="application/json">null</script>
+  <script src="/assets/trimmer/vendor/lame.min.js"></script>
+  <script src="/assets/trimmer/app.js"></script>
+</body>
+</html>

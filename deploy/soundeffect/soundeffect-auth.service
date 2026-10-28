@@ -1,0 +1,25 @@
+[Unit]
+Description=Sound Cut password authentication
+After=network.target
+
+[Service]
+Type=simple
+User=deploy
+Group=deploy
+ExecStart=/home/deploy/apps/soundeffect/venv/bin/python /home/deploy/apps/soundeffect/current/auth.py
+Environment=SOUNDCUT_AUTH_CONFIG=/etc/soundeffect/auth.json
+Environment=SOUNDCUT_DATA=/home/deploy/apps/soundeffect/data
+Environment=SOUNDCUT_PROXY=socks5://127.0.0.1:18088
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/deploy/apps/soundeffect/data
+UMask=0022
+RestrictAddressFamilies=AF_INET AF_UNIX
+
+[Install]
+WantedBy=multi-user.target

@@ -37,7 +37,7 @@ def _apply_cookies(ydl_opts, cookies_from_browser):
         ydl_opts['cookiesfrombrowser'] = (cookies_from_browser,)
 
 
-def download_youtube_to_mp3(url, output_path=None, quality='best', cookies_from_browser=None):
+def download_youtube_to_mp3(url, output_path=None, quality='best', cookies_from_browser=None, *, progress_hook=None):
     """
     Download YouTube video and convert to MP3.
 
@@ -91,6 +91,8 @@ def download_youtube_to_mp3(url, output_path=None, quality='best', cookies_from_
         'ignoreerrors': False,     # Stop on errors rather than continue
     }
     _apply_cookies(ydl_opts, cookies_from_browser)
+    if progress_hook:
+        ydl_opts['progress_hooks'] = [progress_hook]
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -112,14 +114,14 @@ def download_youtube_to_mp3(url, output_path=None, quality='best', cookies_from_
     except Exception as e:
         if _is_bot_error(e) and not cookies_from_browser:
             print("⚠️  Bot detection hit -- retrying with Chrome cookies...")
-            return download_youtube_to_mp3(url, output_path, quality, cookies_from_browser='chrome')
+            return download_youtube_to_mp3(url, output_path, quality, cookies_from_browser='chrome', progress_hook=progress_hook)
         if _is_bot_error(e):
             print("Hint: this is often triggered by VPN/proxy IPs (e.g. NordVPN). Try disabling VPN or switching exit node.")
         print(f"❌ Error: {str(e)}")
         return False
 
 
-def download_youtube_to_flac(url, output_path=None, cookies_from_browser=None):
+def download_youtube_to_flac(url, output_path=None, cookies_from_browser=None, *, progress_hook=None):
     """
     Download YouTube video and convert to lossless FLAC.
     """
@@ -147,6 +149,8 @@ def download_youtube_to_flac(url, output_path=None, cookies_from_browser=None):
         'split_chapters': False,
     }
     _apply_cookies(ydl_opts, cookies_from_browser)
+    if progress_hook:
+        ydl_opts['progress_hooks'] = [progress_hook]
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -167,14 +171,26 @@ def download_youtube_to_flac(url, output_path=None, cookies_from_browser=None):
     except Exception as e:
         if _is_bot_error(e) and not cookies_from_browser:
             print("⚠️  Bot detection hit -- retrying with Chrome cookies...")
-            return download_youtube_to_flac(url, output_path, cookies_from_browser='chrome')
+            return download_youtube_to_flac(url, output_path, cookies_from_browser='chrome', progress_hook=progress_hook)
         if _is_bot_error(e):
             print("Hint: this is often triggered by VPN/proxy IPs (e.g. NordVPN). Try disabling VPN or switching exit node.")
         print(f"❌ Error: {str(e)}")
         return False
 
 
-def download_youtube_to_mp4(url, output_path=None, cookies_from_browser=None):
+def _english_subtitle_language(info):
+    """Prefer creator captions, then the original English automatic track."""
+    for tracks in (info.get('subtitles') or {}, info.get('automatic_captions') or {}):
+        for language in ('en-orig', 'en', 'en-US', 'en-GB'):
+            if tracks.get(language):
+                return language
+        for language in sorted(tracks):
+            if language.startswith('en-') and tracks[language]:
+                return language
+    raise ValueError('No English subtitles are available for this video. Turn off Include subtitles to download it without captions.')
+
+
+def download_youtube_to_mp4(url, output_path=None, cookies_from_browser=None, *, progress_hook=None, subtitles=False):
     """
     Download YouTube video as MP4.
 
@@ -211,6 +227,15 @@ def download_youtube_to_mp4(url, output_path=None, cookies_from_browser=None):
         'extract_flat': False,     # Full extraction, not just metadata
     }
     _apply_cookies(ydl_opts, cookies_from_browser)
+    if progress_hook:
+        ydl_opts['progress_hooks'] = [progress_hook]
+    if subtitles:
+        ydl_opts.update({
+            'writesubtitles': True,
+            'writeautomaticsub': True,
+            'subtitlesformat': 'vtt/best',
+            'postprocessors': [{'key': 'FFmpegSubtitlesConvertor', 'format': 'srt', 'when': 'before_dl'}],
+        })
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -224,6 +249,8 @@ def download_youtube_to_mp4(url, output_path=None, cookies_from_browser=None):
             print(f"Downloading video as MP4...")
 
             # Download video
+            if subtitles:
+                ydl.params['subtitleslangs'] = [_english_subtitle_language(info)]
             ydl.download([url])
 
             print(f"✅ Successfully downloaded: {title}")
@@ -233,7 +260,7 @@ def download_youtube_to_mp4(url, output_path=None, cookies_from_browser=None):
     except Exception as e:
         if _is_bot_error(e) and not cookies_from_browser:
             print("⚠️  Bot detection hit -- retrying with Chrome cookies...")
-            return download_youtube_to_mp4(url, output_path, cookies_from_browser='chrome')
+            return download_youtube_to_mp4(url, output_path, cookies_from_browser='chrome', progress_hook=progress_hook, subtitles=subtitles)
         if _is_bot_error(e):
             print("Hint: this is often triggered by VPN/proxy IPs (e.g. NordVPN). Try disabling VPN or switching exit node.")
         print(f"❌ Error: {str(e)}")

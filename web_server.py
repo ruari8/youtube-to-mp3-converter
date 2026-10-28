@@ -15,11 +15,14 @@ import io
 import json
 import mimetypes
 import os
+import re
 import shutil
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote, urlparse
+
+from audio_library import load_library
 
 try:
     import yt2mp3  # type: ignore
@@ -39,13 +42,14 @@ def _ffmpeg_ok() -> bool:
     return bool(shutil.which("ffmpeg")) and bool(shutil.which("ffprobe"))
 
 
-def _json(handler: BaseHTTPRequestHandler, status: int, payload: dict) -> None:
+def _json(handler: BaseHTTPRequestHandler, status: int, payload: dict | list) -> None:
     data = json.dumps(payload).encode("utf-8")
     handler.send_response(status)
     handler.send_header("Content-Type", "application/json; charset=utf-8")
     handler.send_header("Content-Length", str(len(data)))
     handler.end_headers()
-    handler.wfile.write(data)
+    if handler.command != 'HEAD':
+        handler.wfile.write(data)
 
 
 def _safe_join(base: Path, rel: str) -> Path | None:
@@ -88,6 +92,14 @@ class Handler(BaseHTTPRequestHandler):
             self._serve_file(FRONTEND_DIR / "index.html")
             return
 
+        if path in ("/trimmer", "/trimmer/", "/trimmer.html"):
+            self._serve_file(FRONTEND_DIR / "trimmer.html")
+            return
+
+        if path == "/api/audio-library":
+            _json(self, HTTPStatus.OK, load_library(DOWNLOADS_DIR))
+            return
+
         if path.startswith("/assets/"):
             rel = path.removeprefix("/assets/")
             target = _safe_join(ASSETS_DIR, rel)
@@ -110,7 +122,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def _serve_file(self, file_path: Path) -> None:
         try:
-            data = file_path.read_bytes()
+            size = file_path.stat().st_size
         except Exception:
             self.send_error(HTTPStatus.INTERNAL_SERVER_ERROR)
             return
@@ -119,13 +131,56 @@ class Handler(BaseHTTPRequestHandler):
         if not ctype:
             ctype = "application/octet-stream"
 
-        self.send_response(HTTPStatus.OK)
+        start, end = 0, size - 1
+        byte_range = self.headers.get('Range') if self.command == 'GET' else None
+        if byte_range:
+            match = re.fullmatch(r'bytes=(\d*)-(\d*)', byte_range)
+            try:
+                if not match or not any(match.groups()) or size == 0:
+                    raise ValueError
+                first, last = match.groups()
+                if first:
+                    start = int(first)
+                    end = min(int(last), size - 1) if last else size - 1
+                else:
+                    suffix = int(last)
+                    if suffix <= 0:
+                        raise ValueError
+                    start = max(0, size - suffix)
+                if start > end or start >= size:
+                    raise ValueError
+            except ValueError:
+                self.send_response(HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE)
+                self.send_header('Content-Range', f'bytes */{size}')
+                self.send_header('Content-Length', '0')
+                self.end_headers()
+                return
+
+        self.send_response(HTTPStatus.PARTIAL_CONTENT if byte_range else HTTPStatus.OK)
         self.send_header("Content-Type", ctype)
-        self.send_header("Content-Length", str(len(data)))
+        self.send_header("Content-Length", str(end - start + 1))
+        self.send_header('Accept-Ranges', 'bytes')
+        if byte_range:
+            self.send_header('Content-Range', f'bytes {start}-{end}/{size}')
         # Allow local frontend iteration.
         self.send_header("Cache-Control", "no-store")
         self.end_headers()
-        self.wfile.write(data)
+        if self.command == 'HEAD':
+            return
+        try:
+            with file_path.open('rb') as source:
+                source.seek(start)
+                remaining = end - start + 1
+                while remaining:
+                    chunk = source.read(min(65536, remaining))
+                    if not chunk:
+                        break
+                    self.wfile.write(chunk)
+                    remaining -= len(chunk)
+        except (BrokenPipeError, ConnectionResetError):
+            pass  # Seeking or switching videos cancels the previous request.
+
+    do_HEAD = do_GET
 
     def do_POST(self) -> None:
         parsed = urlparse(self.path)

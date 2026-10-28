@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Clip & save</title>
+  <link rel="stylesheet" href="panel.css">
+  <script src="panel.js" type="module"></script>
+</head>
+<body>
+  <header><span class="brand-icon" aria-hidden="true">↓</span><span class="brand">yt2mp3</span><span class="local">ON YOUR MAC</span></header>
+  <main>
+    <h1>Keep the good part.</h1>
+    <p class="intro">A clip or the whole thing. Yours to play.</p>
+    <div class="connection"><span id="connection-dot"></span><span id="connection">Connecting to your Mac…</span><button id="reconnect" class="text-button" type="button">Retry</button></div>
+    <details id="setup" hidden><summary>Connect the local helper</summary><p id="helper-error"></p><p>In the yt2mp3 project, run this once:</p><code>./venv/bin/python scripts/install_chrome_helper.py</code><p>Then click Retry. The helper starts automatically after setup.</p></details>
+    <section class="video-card" aria-label="Current video">
+      <span class="eyebrow">CURRENT VIDEO</span>
+      <h2 id="video-title">Open a YouTube video</h2>
+      <p id="video-meta">Your video will appear here.</p>
+    </section>
+    <form id="download-form">
+      <fieldset id="controls" disabled>
+        <legend class="sr-only">Download options</legend>
+        <div class="mode-switch">
+          <label><input type="radio" name="mode" value="clip" checked><span>Trim a clip</span></label>
+          <label><input type="radio" name="mode" value="full"><span>Full video</span></label>
+        </div>
+        <section id="clip-controls">
+          <div class="section-heading"><h3>Your selection</h3><span id="selection-length">0:00.000</span></div>
+          <div class="time-grid">
+            <div><label for="start">Start</label><input id="start" type="text" value="0:00.000" aria-describedby="nudge-help" autocomplete="off" spellcheck="false"><div class="nudge-buttons"><button type="button" data-boundary="start" data-direction="-1" aria-label="Nudge start earlier">−</button><button type="button" data-boundary="start" data-direction="1" aria-label="Nudge start later">+</button><button type="button" id="start-now" class="text-button">Use current time</button></div></div>
+            <div><label for="end">End</label><input id="end" type="text" value="0:30.000" aria-describedby="nudge-help" autocomplete="off" spellcheck="false"><div class="nudge-buttons"><button type="button" data-boundary="end" data-direction="-1" aria-label="Nudge end earlier">−</button><button type="button" data-boundary="end" data-direction="1" aria-label="Nudge end later">+</button><button type="button" id="end-now" class="text-button">Use current time</button></div></div>
+          </div>
+          <div class="nudge-step"><label for="nudge-step">Nudge by</label><select id="nudge-step"><option value="0.001">0.001s · 1 ms</option><option value="0.01" selected>0.010s · 10 ms</option><option value="0.1">0.100s · 100 ms</option></select></div>
+          <p id="nudge-help" class="hint">↑ / ↓ adjust a time. Shift: 0.100s · Option: 0.001s.</p>
+          <div class="range-controls">
+            <label for="start-range">Start <span aria-hidden="true">↦</span></label><input id="start-range" type="range" min="0" max="100" step="0.001" value="0">
+            <label for="end-range">End <span aria-hidden="true">↤</span></label><input id="end-range" type="range" min="0.001" max="100" step="0.001" value="30">
+          </div>
+          <div class="preview-row"><button id="preview" type="button" class="secondary">▷ Preview clip</button><button id="stop-preview" type="button" class="text-button">Stop</button><span id="playhead">At 0:00.000</span></div>
+        </section>
+        <p id="full-note" hidden>The complete video, from start to finish.</p>
+        <div class="section-heading"><h3>Save as</h3></div>
+        <div class="format-grid">
+          <label><input type="radio" name="format" value="mp3" checked><span><strong>MP3</strong><small>Audio</small></span></label>
+          <label><input type="radio" name="format" value="flac"><span><strong>FLAC</strong><small>Audio</small></span></label>
+          <label><input type="radio" name="format" value="mp4"><span><strong>MP4</strong><small>Video</small></span></label>
+        </div>
+        <div id="quality-row"><label for="quality">Audio quality</label><select id="quality"><option value="128">128 kbps</option><option value="192" selected>192 kbps</option><option value="256">256 kbps</option><option value="320">320 kbps</option></select></div>
+        <p id="format-note" class="hint">A small file that plays almost anywhere.</p>
+        <div id="subtitles-row" hidden>
+          <label class="subtitle-toggle"><span>Include subtitles</span><input id="subtitles" type="checkbox" role="switch" aria-describedby="subtitles-help"></label>
+          <p id="subtitles-help" class="hint">English captions, always visible in the video. Uses automatic captions if needed.</p>
+        </div>
+        <button id="download" class="primary" type="submit">↓ Download clip</button>
+        <p id="destination" class="destination">Saves to Downloads / YouTube_MP3</p>
+        <p id="trim-note" class="hint centered">The source downloads first, then your clip is trimmed.</p>
+      </fieldset>
+    </form>
+    <p id="error" role="alert" hidden></p>
+    <section id="job" class="job-card" aria-live="polite" hidden>
+      <span id="job-label" class="eyebrow">DOWNLOAD</span>
+      <h3 id="job-title"></h3><p id="job-message"></p>
+      <progress id="progress" max="100"></progress>
+      <p id="filename" hidden></p><button id="reveal" class="secondary" type="button" hidden>Show in Finder ↗</button>
+    </section>
+  </main>
+  <footer>Saved locally. Ready for another listen.</footer>
+</body>
+</html>

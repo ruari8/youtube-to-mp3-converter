@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "yt2mp3 \u00b7 Clip & save",
+  "version": "0.1.0",
+  "description": "Trim and save YouTube audio or video with your local yt2mp3 downloader.",
+  "minimum_chrome_version": "116",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArvh2Uw9WNedkued7hWLPBb9WLOOBn6Yabzb4gD72Yy4asP8kz2gNv6XVitZn9Z4qERZhKovBf1q+JF73O/JsQm9vrrTbFegu+bcSShnDJgxamDg3ywtUjpuWPyqH85paJGzOGpNfXgJXpFtRTcQuUykWD9Xio63NY3I83QExhiYntJ2SFF7rk3uQGV1GeOvCOyxy5CTBHs6GV32JBjcoLSvWdzxHkO05tOwZAz7SMePR4NHQkGN4azl+oiDcTZ02BmgoUgbL/xiUTsSUcI0F3UQvjdYMfSvKEY67MD/JOzW1Kt7TQjuq+mQteCDobwn7su5FZ467pf/4KAUPXzWqAQIDAQAB",
+  "permissions": [
+    "nativeMessaging",
+    "sidePanel",
+    "storage",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://www.youtube.com/*",
+    "https://m.youtube.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Clip & save"
+  },
+  "side_panel": {
+    "default_path": "panel.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.youtube.com/*",
+        "https://m.youtube.com/*"
+      ],
+      "js": [
+        "youtube.js"
+      ]
+    }
+  ]
+}
